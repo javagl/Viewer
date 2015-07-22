@@ -10,7 +10,7 @@
 
     <groupId>de.javagl</groupId>
     <artifactId>viewer</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
 
     <name>viewer</name>
     <description>A Java Swing Panel that allows rotation, translation and zooming</description>
