@@ -117,6 +117,12 @@ public class Viewer extends JPanel
     private Rectangle2D pendingWorldArea = null;
     
     /**
+     * The state of the {@link #maintainAspectRatio} flag when the
+     * {@link #pendingWorldArea} was set
+     */
+    private boolean pendingWorldAreaMaintainAspectRatioState = false;
+    
+    /**
      * The last stored screen size
      */
     private Dimension previousSize = null;
@@ -159,9 +165,7 @@ public class Viewer extends JPanel
     private MouseControl mouseControl;
     
     /**
-     * Creates a new Viewer with a 
-     * {@link MouseControls#createDefault(Viewer, boolean, boolean)
-     * default MouseControl}, where rotation is allowed.<br>
+     * Creates a new Viewer.<br>
      * <br>
      * The default settings are as follows:
      * <ul>
@@ -169,40 +173,18 @@ public class Viewer extends JPanel
      *   <li>{@link #isMaintainAspectRatio()} is <code>true</code></li>
      *   <li>{@link #isAntialiasing()} is <code>true</code></li>
      * </ul>
-     * 
+     * A default {@link MouseControls#createDefault(Viewer, boolean, boolean) 
+     * MouseControl}, where rotation and non-uniform scaling are allowed,
+     * will be installed by calling {@link #setMouseControl(MouseControl)} 
      */
     public Viewer()
-    {
-        this(true, true);
-    }
-    
-    /**
-     * Creates a new viewer. <br>
-     * <br>
-     * The default settings are as follows:
-     * <ul>
-     *   <li>{@link #isResizingContents()} is <code>false</code></li>
-     *   <li>{@link #isMaintainAspectRatio()} is <code>true</code></li>
-     *   <li>{@link #isAntialiasing()} is <code>true</code></li>
-     * </ul>
-     * 
-     * @param defaultMouseControl Whether the 
-     * {@link MouseControls#createDefault(Viewer, boolean, boolean)
-     * default MouseControl} should be installed. 
-     * @param rotationAllowed Whether rotations are allowed in the default
-     * mouse control
-     */
-    public Viewer(boolean defaultMouseControl, boolean rotationAllowed)
     {
         this.painters = new TreeMap<Integer, Set<Painter>>();
         this.transform = new AffineTransform();
         this.inverseTransform = new AffineTransform();
         this.worldArea = new Rectangle2D.Double(0,0,1,1);
-        if (defaultMouseControl)
-        {
-            setMouseControl(
-                MouseControls.createDefault(this, rotationAllowed, true));
-        }
+        setMouseControl(
+            MouseControls.createDefault(this, true, true));
         setBackground(Color.WHITE);
         addComponentListener(new ComponentAdapter()
         {
@@ -221,7 +203,8 @@ public class Viewer extends JPanel
      * for this viewer. Any previously registered {@link MouseControl} will
      * be removed.
      * 
-     * @param newMouseControl The {@link MouseControl} to set
+     * @param newMouseControl The {@link MouseControl} to set. This may be
+     * <code>null</code> to remove any {@link MouseControl}
      */
     public final void setMouseControl(MouseControl newMouseControl)
     {
@@ -463,6 +446,16 @@ public class Viewer extends JPanel
         super.paintComponent(gr);
         Graphics2D g = (Graphics2D)gr;
         
+        if (pendingWorldArea != null)
+        {
+            boolean b = isMaintainAspectRatio();
+            setMaintainAspectRatio(
+                pendingWorldAreaMaintainAspectRatioState);
+            setDisplayedWorldArea(pendingWorldArea);
+            pendingWorldArea = null;
+            setMaintainAspectRatio(b);
+        }
+        
         if (antialiasing)
         {
             g.setRenderingHint(
@@ -660,9 +653,37 @@ public class Viewer extends JPanel
     
     
     /**
-     * Set the area (in world coordinates) that should be shown. This
-     * will adjust the scaling and translation so that at least the
-     * given rectangle is visible (even when the view is rotated).
+     * Set the area (in world coordinates) that should be shown.<br> 
+     * <br>
+     * This will adjust the scaling and translation so that at least the
+     * specified rectangle is visible (even when the view is rotated).<br>
+     * <br>
+     * If this viewer is {@link #isMaintainAspectRatio() maintaining
+     * the aspect ratio}, then the smallest area with the current 
+     * aspect ratio will be visible that entirely contains the specified
+     * rectangle.  
+     * 
+     * @param x The x-coordinate
+     * @param y The y-coordinate  
+     * @param w The width 
+     * @param h The height
+     */
+    public final void setDisplayedWorldArea(
+        double x, double y, double w, double h)
+    {
+        setDisplayedWorldArea(new Rectangle2D.Double(x, y, w, h));
+    }
+    
+    /**
+     * Set the area (in world coordinates) that should be shown. <br> 
+     * <br>
+     * This will adjust the scaling and translation so that at least the
+     * given rectangle is visible (even when the view is rotated).<br>
+     * <br>
+     * If this viewer is {@link #isMaintainAspectRatio() maintaining
+     * the aspect ratio}, then the smallest area with the current 
+     * aspect ratio will be visible that entirely contains the given
+     * rectangle.
      * 
      * @param newWorldArea The world area
      */
@@ -672,6 +693,8 @@ public class Viewer extends JPanel
         {
             pendingWorldArea = new Rectangle2D.Double();
             pendingWorldArea.setRect(newWorldArea);
+            pendingWorldAreaMaintainAspectRatioState = 
+                maintainAspectRatio;
             return;
         }
         pendingWorldArea = null;
@@ -718,7 +741,12 @@ public class Viewer extends JPanel
         }
         if (pendingWorldArea != null)
         {
+            boolean b = isMaintainAspectRatio();
+            setMaintainAspectRatio(
+                pendingWorldAreaMaintainAspectRatioState);
             setDisplayedWorldArea(pendingWorldArea);
+            pendingWorldArea = null;
+            setMaintainAspectRatio(b);
             pendingWorldArea = null;
         }
         if (resizingContents)
