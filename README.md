@@ -18,11 +18,29 @@ capabilities, and uses two implementations of the
 applying a transform to the `Graphics2D`, and applying
 a transform to the painted objects.
 
-These control of the viewer is usually done with `MouseListener`s,
+The control of the viewer is usually done with `MouseListener`s,
 `MouseMotionListener`s and `MouseWheelListener`s. Default 
 implementations (for default controls) are summarized in the
 `MouseControls` class, which can conveniently be attached to
 the viewer. 
 
 
+# Changes
 
+0.0.3 : 
+
+  * Replaced `GeomUtils` class with dependency to `de.javagl:geom:0.0.1`
+  * Added zoom limiting in `Viewer` to prevent rendering errors for very
+    large or very small zooming factors
+  * Added the `painters` package, containing default `Painter` implementations
+   
+
+0.0.2 : 
+
+  * Added convenience methods in viewer
+  * Handled the case that the state of maintaining the
+    aspect ratio interferes with setting the world area
+
+0.0.1 : 
+
+  * Initial commit

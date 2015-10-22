@@ -45,6 +45,9 @@ import java.util.TreeMap;
 
 import javax.swing.JPanel;
 
+import de.javagl.geom.Points;
+import de.javagl.geom.Rectangles;
+
 /**
  * A panel that allows translating, rotating and zooming. <br>
  * <br>
@@ -552,7 +555,7 @@ public class Viewer extends JPanel
      */
     public final void transform(AffineTransform t)
     {
-        GeomUtils.validate(t);
+        validate(t);
         transform.concatenate(t);
         inverseTransform = null;
         repaint();
@@ -578,7 +581,7 @@ public class Viewer extends JPanel
      */
     public final void setTransform(AffineTransform t)
     {
-        GeomUtils.validate(t);
+        validate(t);
         transform.setTransform(t);
         inverseTransform = null;
         repaint();
@@ -587,7 +590,15 @@ public class Viewer extends JPanel
     
     /**
      * Zoom about the specified point (in screen coordinates) by the given 
-     * factor.  
+     * factor.<br>
+     * <br>
+     * This method will try to limit the zooming factor of this viewer in
+     * order to prevent rendering errors: When the zooming factor already 
+     * is very large, then this method may not allow zooming in any further 
+     * (and similarly, for zooming out when the zooming factor already 
+     * is very small). But due to the limited precision of <code>double</code> 
+     * computations, this limitation of the zoom may not always be
+     * effective - for example, when the translation is very large.
      * 
      * @param screenCenterX The x-coordinate of the zooming center, 
      * in screen coordinates
@@ -599,7 +610,11 @@ public class Viewer extends JPanel
     public final void zoom(double screenCenterX, double screenCenterY, 
         double factorX, double factorY)
     {
-        Point2D worldCenter = GeomUtils.inverseTransform(
+        if (zoomExceedsLimits(factorX, factorX))
+        {
+            return;
+        }
+        Point2D worldCenter = Points.inverseTransform(
             transform, new Point2D.Double(screenCenterX, screenCenterY), null);
         AffineTransform t = new AffineTransform();
         t.translate(worldCenter.getX(), worldCenter.getY());
@@ -607,6 +622,39 @@ public class Viewer extends JPanel
         t.translate(-worldCenter.getX(), -worldCenter.getY());
         transform(t);
         repaint();
+    }
+    
+    /**
+     * Returns whether a {@link #zoom} with the given factors will exceed
+     * the limits. This is the case when the zoom is already very large
+     * or very small, and the additional zoom factors will likely introduce
+     * rendering errors.
+     * 
+     * @param factorX The zooming factor for the x-axis
+     * @param factorY The zooming factor for the y-axis
+     * @return Whether the zoom exceeds the limits
+     */
+    private boolean zoomExceedsLimits(double factorX, double factorY)
+    {
+        final double maxScale = 1e8;
+        final double minScale = 1e-8;
+        if (transform.getScaleX() > maxScale && factorX > 1.0)
+        {
+            return true;
+        }
+        if (transform.getScaleY() > maxScale && factorY > 1.0)
+        {
+            return true;
+        }
+        if (transform.getScaleX() < minScale && factorX < 1.0)
+        {
+            return true;
+        }
+        if (transform.getScaleY() < minScale && factorY < 1.0)
+        {
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -618,9 +666,9 @@ public class Viewer extends JPanel
      */
     public final void translate(double screenDx, double screenDy)
     {
-        Point2D worldOld = GeomUtils.inverseTransform(
+        Point2D worldOld = Points.inverseTransform(
             transform, new Point2D.Double(0, 0), null);
-        Point2D worldNew = GeomUtils.inverseTransform(
+        Point2D worldNew = Points.inverseTransform(
             transform, new Point2D.Double(screenDx, screenDy), null);
         double tdx = worldNew.getX() - worldOld.getX();
         double tdy = worldNew.getY() - worldOld.getY();
@@ -700,7 +748,7 @@ public class Viewer extends JPanel
         pendingWorldArea = null;
         worldArea.setRect(newWorldArea);
         
-        Rectangle2D worldAreaInScreen = GeomUtils.computeBounds(
+        Rectangle2D worldAreaInScreen = Rectangles.computeBounds(
             getWorldToScreen(), worldArea, null);
         double scaleX = getWidth() / worldAreaInScreen.getWidth();
         double scaleY = getHeight() / worldAreaInScreen.getHeight();
@@ -720,7 +768,7 @@ public class Viewer extends JPanel
             AffineTransform.getTranslateInstance(-dx * scaleX, -dy * scaleY));
         inverseTransform = null;
         
-        Rectangle2D newWorldAreaInScreen = GeomUtils.computeBounds(
+        Rectangle2D newWorldAreaInScreen = Rectangles.computeBounds(
             getWorldToScreen(), worldArea, null);
         double newDx = -newWorldAreaInScreen.getX();
         double newDy = -newWorldAreaInScreen.getY();
@@ -769,5 +817,27 @@ public class Viewer extends JPanel
         }
         previousSize = getSize();
     }
+    
+    
+    /**
+     * Make sure that the given determinant is non-null and has a 
+     * valid (and non-zero) determinant
+     * 
+     * @param at The affine transform
+     * @throws NullPointerException If the given transform is <code>null</code>
+     * @throws IllegalArgumentException If the determinant of the given 
+     * transform is 0.0, or NaN, or infinite
+     */
+    private static void validate(AffineTransform at)
+    {
+        double determinant = at.getDeterminant();
+        if (determinant == 0.0 || 
+            Double.isNaN(determinant) ||
+            Double.isInfinite(determinant))
+        {
+            throw new IllegalArgumentException("Determinant is "+determinant);
+        }
+    }
+    
 
 }

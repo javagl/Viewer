@@ -84,4 +84,11 @@
     </build>
 
 
+    <dependencies>
+    	<dependency>
+    		<groupId>de.javagl</groupId>
+    		<artifactId>geom</artifactId>
+    		<version>0.0.1</version>
+    	</dependency>
+    </dependencies>
 </project>
