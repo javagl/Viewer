@@ -81,7 +81,6 @@ public class LabelPainterPredicates
                 double transformedLabelWidth = 
                     AffineTransforms.computeDistanceX(
                         affineTransform, labelBounds.getWidth());
-                System.out.println("Transformed is "+transformedLabelWidth+" from "+labelBounds);
                 return transformedLabelWidth >= minimumTransformedLabelWidth;
             }
         };
