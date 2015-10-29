@@ -18,6 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import de.javagl.viewer.MouseControls;
 import de.javagl.viewer.Viewer;
 import de.javagl.viewer.painters.CoordinateSystemPainter;
 
@@ -42,7 +43,7 @@ public class CoordinateSystemPainterTest
     
     private static void createAndShowGUI()
     {
-        JFrame f = new JFrame("Viewer Functions");
+        JFrame f = new JFrame("Viewer");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
  
         f.getContentPane().setLayout(new BorderLayout());
@@ -58,6 +59,8 @@ public class CoordinateSystemPainterTest
        
         
         Viewer viewer = new Viewer();
+        viewer.setMouseControl(
+            MouseControls.createDefault(viewer, false, true));
         viewer.setFlippedVertically(true);
         
         CoordinateSystemPainter coordinateSystemPainter =
@@ -67,6 +70,7 @@ public class CoordinateSystemPainterTest
         f.getContentPane().add(viewer, BorderLayout.CENTER);
 
         JPanel controlPanel = new JPanel(new GridLayout(1,2));
+        
         JCheckBox screenBasedCheckBox = new JCheckBox("Screen based");
         screenBasedCheckBox.addActionListener(new ActionListener()
         {
@@ -85,6 +89,21 @@ public class CoordinateSystemPainterTest
             }
         });
         controlPanel.add(screenBasedCheckBox);
+        
+        
+        JCheckBox limitAxesCheckBox = new JCheckBox("Limit axes");
+        limitAxesCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                setAxisRanges(coordinateSystemPainter, 
+                    limitAxesCheckBox.isSelected());
+                viewer.repaint();
+            }
+        });
+        controlPanel.add(limitAxesCheckBox);
+
 
         JButton resetDisplayedAreaButton = new JButton("Reset displayed area");
         resetDisplayedAreaButton.addActionListener(new ActionListener()
@@ -127,5 +146,21 @@ public class CoordinateSystemPainterTest
         coordinateSystemPainter.setScreenAxisLayoutX(null, null, null);
         coordinateSystemPainter.setScreenAxisLayoutY(null, null, null);
     }
+    
+    private static void setAxisRanges(
+        CoordinateSystemPainter coordinateSystemPainter, boolean limited)
+    {
+        if (limited)
+        {
+            coordinateSystemPainter.setAxisRangeX(-1.0, 1.0);
+            coordinateSystemPainter.setAxisRangeY(-1.0, 1.0);
+        }
+        else
+        {
+            coordinateSystemPainter.setAxisRangeX(Double.NaN, Double.NaN);
+            coordinateSystemPainter.setAxisRangeY(Double.NaN, Double.NaN);
+        }
+    }
+    
     
 }

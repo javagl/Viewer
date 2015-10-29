@@ -51,6 +51,11 @@ import de.javagl.viewer.Painter;
 public final class CoordinateSystemPainter implements Painter
 {
     /**
+     * A line object, used internally in various methods
+     */
+    private static final Line2D.Double TEMP_LINE = new Line2D.Double();
+    
+    /**
      * The font that will be used for the labels
      */
     private final Font font = new Font("Dialog", Font.PLAIN, 9);
@@ -67,10 +72,22 @@ public final class CoordinateSystemPainter implements Painter
     private Color axisColorX = Color.GRAY;
     
     /**
+     * The color of the labels on the x-axis. If this is <code>null</code>, 
+     * then the labels on the x-axis will not be painted.
+     */
+    private Color labelColorX = Color.GRAY;
+    
+    /**
      * The color of the y-axis. If this is <code>null</code>, then the
      * y-axis will not be painted.
      */
     private Color axisColorY = Color.GRAY;
+    
+    /**
+     * The color of the labels on the y-axis. If this is <code>null</code>, 
+     * then the labels on the y-axis will not be painted.
+     */
+    private Color labelColorY = Color.GRAY;
     
     /**
      * The size of the tick marks on the screen
@@ -104,20 +121,10 @@ public final class CoordinateSystemPainter implements Painter
     private final boolean adjustForStringLengths = true;
     
     /**
-     * Whether labels are printed at the axis ticks
-     */
-    private final boolean printLabels = true;
-    
-    /**
      * The color for the grid. If this is <code>null</code>, then no
      * grid will be painted 
      */
     private Color gridColor = new Color(240,240,240);
-    
-    /**
-     * A line object, used internally in various methods
-     */
-    private final Line2D.Double line = new Line2D.Double();
     
     /**
      * The tick positions of the x-axis, in world coordinates
@@ -144,7 +151,7 @@ public final class CoordinateSystemPainter implements Painter
     /**
      * The bounds of the currently visible area, in world coordinates
      */
-    private Rectangle2D worldBounds = new Rectangle2D.Double();
+    private final Rectangle2D worldBounds = new Rectangle2D.Double();
     
     /**
      * The supplier that provides the x-coordinate on the screen
@@ -181,7 +188,55 @@ public final class CoordinateSystemPainter implements Painter
      * where the y-axis should be located
      */
     private IntSupplier supplierScreenX = null;
+    
+    /**
+     * The minimum value for the x-axis, in world coordinates
+     * 
+     * @see #setAxisRangeX(double, double)
+     */
+    private double worldMinAxisX = Double.NaN;
+    
+    /**
+     * The maximum value for the x-axis, in world coordinates
+     * 
+     * @see #setAxisRangeX(double, double)
+     */
+    private double worldMaxAxisX = Double.NaN;
 
+    /**
+     * The minimum value for the Y-axis, in world coordinates
+     * 
+     * @see #setAxisRangeY(double, double)
+     */
+    private double worldMinAxisY = Double.NaN;
+    
+    /**
+     * The maximum value for the y-axis, in world coordinates
+     * 
+     * @see #setAxisRangeY(double, double)
+     */
+    private double worldMaxAxisY = Double.NaN;
+    
+    /**
+     * The x-coordinate where the y-axis should be, in world coordinates
+     */
+    private final double worldXofY = 0.0;
+
+    /**
+     * The y-coordinate where the x-axis should be, in world coordinates
+     */
+    private final double worldYofX = 0.0;
+    
+    /**
+     * Whether ticks on the x-axis should be oriented along the positive y-axis
+     */
+    private boolean tickOrientationPositiveX = false;
+    
+    /**
+     * Whether ticks on the y-axis should be oriented along the positive x-axis
+     */
+    private boolean tickOrientationPositiveY = false;
+    
     /**
      * The {@link LabelPainter} for the labels on the x-axis
      */
@@ -198,18 +253,16 @@ public final class CoordinateSystemPainter implements Painter
     public CoordinateSystemPainter()
     {
         labelPainterX = new LabelPainter();
-        labelPainterX.setLabelAnchor(0.5, 0.0);
         labelPainterX.setPaint(axisColorX);
         labelPainterX.setTransformingLabels(false);
         labelPainterX.setFont(font);
         
         labelPainterY = new LabelPainter();
-        labelPainterY.setLabelAnchor(1.0, 0.5);
         labelPainterY.setPaint(axisColorY);
         labelPainterY.setTransformingLabels(false);
         labelPainterY.setFont(font);
-        
     }
+    
     
     /**
      * Set the color for the grid that should be painted in the background.
@@ -233,16 +286,44 @@ public final class CoordinateSystemPainter implements Painter
     {
         this.axisColorX = axisColorX;
     }
+    
+    /**
+     * Set the color of the labels on the x-axis. If this is <code>null</code>, 
+     * then the labels on the x-axis will not be painted. 
+     * 
+     * @param labelColorX The label color
+     */
+    public void setLabelColorX(Color labelColorX)
+    {
+        this.labelColorX = labelColorX;
+        labelPainterX.setPaint(labelColorX);
+    }
+    
+    /**
+     * Set whether ticks on the x-axis should be oriented along the positive 
+     * y-axis
+     * 
+     * @param tickOrientationPositiveX Whether the ticks should be oriented
+     * along the positive axis
+     */
+    void setTickOrientationPositiveX(boolean tickOrientationPositiveX)
+    {
+        this.tickOrientationPositiveX = tickOrientationPositiveX;
+    }
 
     /**
-     * Set the color for the y-axis. If this is <code>null</code>, then
-     * the y-axis will not be painted.
+     * Set the range of the x-axis that should be displayed. If either
+     * of the given values is <code>Double.NaN</code>, then the minimum
+     * or maximum value of the currently visible world area will be
+     * used, respectively
      * 
-     * @param axisColorY The color for the y-axis
+     * @param worldMinAxisX The minimum value, in world coordinates
+     * @param worldMaxAxisX The maximum value, in world coordinates
      */
-    public void setAxisColorY(Color axisColorY)
+    public void setAxisRangeX(double worldMinAxisX, double worldMaxAxisX)
     {
-        this.axisColorY = axisColorY;
+        this.worldMinAxisX = worldMinAxisX;
+        this.worldMaxAxisX = worldMaxAxisX;
     }
     
     
@@ -271,7 +352,56 @@ public final class CoordinateSystemPainter implements Painter
         this.supplierScreenMaxX = supplierScreenMaxX;
         this.supplierScreenY = supplierScreenY;
     }
+    
+    /**
+     * Set the color for the y-axis. If this is <code>null</code>, then
+     * the y-axis will not be painted.
+     * 
+     * @param axisColorY The color for the y-axis
+     */
+    public void setAxisColorY(Color axisColorY)
+    {
+        this.axisColorY = axisColorY;
+    }
+    
+    /**
+     * Set the color of the labels on the y-axis. If this is <code>null</code>, 
+     * then the labels on the y-axis will not be painted. 
+     * 
+     * @param labelColorY The label color
+     */
+    public void setLabelColorY(Color labelColorY)
+    {
+        this.labelColorY = labelColorY;
+        labelPainterY.setPaint(labelColorY);
+    }
+    
+    /**
+     * Set the range of the y-axis that should be displayed. If either
+     * of the given values is <code>Double.NaN</code>, then the minimum
+     * or maximum value of the currently visible world area will be
+     * used, respectively
+     * 
+     * @param worldMinAxisY The minimum value, in world coordinates
+     * @param worldMaxAxisY The maximum value, in world coordinates
+     */
+    public void setAxisRangeY(double worldMinAxisY, double worldMaxAxisY)
+    {
+        this.worldMinAxisY = worldMinAxisY;
+        this.worldMaxAxisY = worldMaxAxisY;
+    }
 
+    /**
+     * Set whether ticks on the y-axis should be oriented along the positive 
+     * x-axis
+     * 
+     * @param tickOrientationPositiveY Whether the ticks should be oriented
+     * along the positive axis
+     */
+    void setTickOrientationPositiveY(boolean tickOrientationPositiveY)
+    {
+        this.tickOrientationPositiveY = tickOrientationPositiveY;
+    }
     
     /**
      * Set the layout for the y-axis. The given suppliers will provide
@@ -316,7 +446,7 @@ public final class CoordinateSystemPainter implements Painter
         double worldTickDistanceX = 
             Axes.computeWorldTickDistanceX(
                 worldToScreen, minScreenTickDistanceX);
-        if (printLabels && adjustForStringLengths)
+        if (labelColorX != null && adjustForStringLengths)
         {
             worldTickDistanceX = 
                 Axes.computeAdjustedWorldTickDistanceX(
@@ -325,11 +455,34 @@ public final class CoordinateSystemPainter implements Painter
         }
         worldTicksX = Axes.computeWorldTicks(
             worldMinX, worldMaxX, worldTickDistanceX);
-        labelFormatX =  null;
-        if (printLabels)
+        if (labelColorX != null)
         {
             labelFormatX = Axes.formatStringFor(worldTickDistanceX);
         }
+
+        if (tickOrientationPositiveX)
+        {
+            if (worldToScreen.getScaleY() > 0)
+            {
+                labelPainterX.setLabelAnchor(0.5, 0.0);
+            }
+            else
+            {
+                labelPainterX.setLabelAnchor(0.5, 1.0);
+            }
+        }
+        else
+        {
+            if (worldToScreen.getScaleY() > 0)
+            {
+                labelPainterX.setLabelAnchor(0.5, 1.0);
+            }
+            else
+            {
+                labelPainterX.setLabelAnchor(0.5, 0.0);
+            }
+        }
+        
     }
 
     /**
@@ -348,11 +501,20 @@ public final class CoordinateSystemPainter implements Painter
                 worldToScreen, minScreenTickDistanceY);
         worldTicksY = Axes.computeWorldTicks(
             worldMinY, worldMaxY, worldTickDistanceY);
-        labelFormatY =  null;
-        if (printLabels)
+        if (labelColorY != null)
         {
             labelFormatY = Axes.formatStringFor(worldTickDistanceY);
         }
+        
+        if (tickOrientationPositiveY)
+        {
+            labelPainterY.setLabelAnchor(0.0, 0.5);
+        }
+        else
+        {
+            labelPainterY.setLabelAnchor(1.0, 0.5);
+        }
+        
     }
     
 
@@ -404,7 +566,9 @@ public final class CoordinateSystemPainter implements Painter
             supplierScreenY == null)
         {
             paintAxisX(g, worldToScreen, 
-                worldBounds.getMinX(), worldBounds.getMaxX(), 0.0);
+                getValue(worldMinAxisX, worldBounds.getMinX()), 
+                getValue(worldMaxAxisX, worldBounds.getMaxX()), 
+                worldYofX);
         }
         else
         {
@@ -421,6 +585,7 @@ public final class CoordinateSystemPainter implements Painter
         }
     }
     
+    
     /**
      * Paint the y-axis.
      *  
@@ -435,7 +600,9 @@ public final class CoordinateSystemPainter implements Painter
             supplierScreenX == null)
         {
             paintAxisY(g, worldToScreen, 
-                worldBounds.getMinY(), worldBounds.getMaxY(), 0.0);
+                getValue(worldMinAxisY, worldBounds.getMinY()), 
+                getValue(worldMaxAxisY, worldBounds.getMaxY()), 
+                worldXofY);
         }
         else
         {
@@ -467,16 +634,19 @@ public final class CoordinateSystemPainter implements Painter
         Graphics2D g, AffineTransform worldToScreen, 
         double worldMinX, double worldMaxX, double worldY)
     {
-        line.setLine(worldMinX,worldY,worldMaxX,worldY);
-        Lines.transform(worldToScreen, line, line);
-        g.draw(line);
-        g.setFont(font);
+        TEMP_LINE.setLine(worldMinX,worldY,worldMaxX,worldY);
+        Lines.transform(worldToScreen, TEMP_LINE, TEMP_LINE);
+        g.draw(TEMP_LINE);
         for (int i=0; i<worldTicksX.length; i++)
         {
             double worldTickX = worldTicksX[i];
             if (worldTickX >= worldMinX && worldTickX <= worldMaxX)
             {
-                paintTickX(g, worldToScreen, worldTickX, worldY, labelFormatX);
+                paintTickX(g, worldToScreen, worldTickX, worldY);
+                if (labelColorX != null )
+                {
+                    paintLabelX(g, worldToScreen, worldTickX, worldY);
+                }
             }
         }
     }
@@ -496,16 +666,19 @@ public final class CoordinateSystemPainter implements Painter
         Graphics2D g, AffineTransform worldToScreen, 
         double worldMinY, double worldMaxY, double worldX)
     {
-        line.setLine(worldX,worldMinY,worldX,worldMaxY);
-        Lines.transform(worldToScreen, line, line);
-        g.draw(line);
-        g.setFont(font);
+        TEMP_LINE.setLine(worldX,worldMinY,worldX,worldMaxY);
+        Lines.transform(worldToScreen, TEMP_LINE, TEMP_LINE);
+        g.draw(TEMP_LINE);
         for (int i=0; i<worldTicksY.length; i++)
         {
             double worldTickY = worldTicksY[i];
             if (worldTickY >= worldMinY && worldTickY <= worldMaxY)
             {
-                paintTickY(g, worldToScreen, worldX, worldTickY, labelFormatY);
+                paintTickY(g, worldToScreen, worldX, worldTickY);
+                if (labelColorY != null)
+                {
+                    paintLabelY(g, worldToScreen, worldX, worldTickY);
+                }
             }
         }
     }
@@ -520,21 +693,27 @@ public final class CoordinateSystemPainter implements Painter
      */
     private void paintInternalGrid(Graphics2D g, AffineTransform worldToScreen)
     {
-        double worldMinX = worldBounds.getMinX();
-        double worldMaxX = worldBounds.getMaxX();
-        double worldMinY = worldBounds.getMinY();
-        double worldMaxY = worldBounds.getMaxY();
+        double worldMinX = getValue(worldMinAxisX, worldBounds.getMinX());
+        double worldMaxX = getValue(worldMaxAxisX, worldBounds.getMaxX());
+        double worldMinY = getValue(worldMinAxisY, worldBounds.getMinY());
+        double worldMaxY = getValue(worldMaxAxisY, worldBounds.getMaxY());
         for (int i=0; i<worldTicksX.length; i++)
         {
             double worldTickX = worldTicksX[i];
-            paintGridLineX(g, worldToScreen, worldTickX, 
-                worldMinY, worldMaxY);
+            if (worldTickX >= worldMinX && worldTickX <= worldMaxX)
+            {
+                paintGridLineX(g, worldToScreen, worldTickX, 
+                    worldMinY, worldMaxY);
+            }
         }
         for (int i=0; i<worldTicksY.length; i++)
         {
             double worldTickY = worldTicksY[i];
-            paintGridLineY(g, worldToScreen, worldTickY, 
-                worldMinX, worldMaxX);
+            if (worldTickY >= worldMinY && worldTickY <= worldMaxY)
+            {
+                paintGridLineY(g, worldToScreen, worldTickY, 
+                    worldMinX, worldMaxX);
+            }
         }
     }
     
@@ -552,9 +731,9 @@ public final class CoordinateSystemPainter implements Painter
     private void paintGridLineX(Graphics2D g, AffineTransform worldToScreen, 
         double worldX, double worldMinY, double worldMaxY)
     {
-        line.setLine(worldX, worldMinY, worldX, worldMaxY);
-        Lines.transform(worldToScreen, line, line);
-        g.draw(line);
+        TEMP_LINE.setLine(worldX, worldMinY, worldX, worldMaxY);
+        Lines.transform(worldToScreen, TEMP_LINE, TEMP_LINE);
+        g.draw(TEMP_LINE);
     }
     
     /**
@@ -569,9 +748,9 @@ public final class CoordinateSystemPainter implements Painter
     private void paintGridLineY(Graphics2D g, AffineTransform worldToScreen, 
         double worldY, double worldMinX, double worldMaxX)
     {
-        line.setLine(worldMinX, worldY, worldMaxX, worldY);
-        Lines.transform(worldToScreen, line, line);
-        g.draw(line);
+        TEMP_LINE.setLine(worldMinX, worldY, worldMaxX, worldY);
+        Lines.transform(worldToScreen, TEMP_LINE, TEMP_LINE);
+        g.draw(TEMP_LINE);
     }
     
     
@@ -582,23 +761,63 @@ public final class CoordinateSystemPainter implements Painter
      * @param worldToScreen The world-to-screen transform
      * @param worldX The x-world coordinate of the tick
      * @param worldY The y-world coordinate of the tick
-     * @param labelFormat The format string for the labels. If this is
-     * <code>null</code>, then no labels will be painted
      */
     private void paintTickX(Graphics2D g, AffineTransform worldToScreen, 
-        double worldX, double worldY, String labelFormat)
+        double worldX, double worldY)
     {
-        line.setLine(worldX, worldY, worldX, worldY-1);
-        Lines.transform(worldToScreen, line, line);
-        Lines.scaleToLength(tickSizeScreen, line, line);
-        g.draw(line);
-        
-        if (labelFormat != null)
+        TEMP_LINE.setLine(worldX, worldY, worldX, worldY+1);
+        Lines.transform(worldToScreen, TEMP_LINE, TEMP_LINE);
+        double length = -tickSizeScreen;
+        if (tickOrientationPositiveX)
         {
-            String string = String.format(labelFormat, worldX);
-            labelPainterX.setLabelLocation(worldX, worldY - tickSizeWorldX);
-            labelPainterX.paint(g, worldToScreen, 0, 0, string);
+            length = -length;
         }
+        Lines.scaleToLength(length, TEMP_LINE, TEMP_LINE);
+        g.draw(TEMP_LINE);
+    }
+    
+    /**
+     * Paints a single tick of the x-axis 
+     * 
+     * @param g The graphics context
+     * @param worldToScreen The world-to-screen transform
+     * @param worldX The x-world coordinate of the tick
+     * @param worldY The y-world coordinate of the tick
+     */
+    private void paintLabelX(Graphics2D g, AffineTransform worldToScreen, 
+        double worldX, double worldY)
+    {
+        String string = String.format(labelFormatX, worldX);
+        double delta = -tickSizeWorldX;
+        if (tickOrientationPositiveX)
+        {
+            delta = -delta;
+        }
+        labelPainterX.setLabelLocation(worldX, worldY + delta);
+        labelPainterX.paint(g, worldToScreen, 0, 0, string);
+    }
+    
+    
+    /**
+     * Paints a single tick of the y-axis 
+     * 
+     * @param g The graphics context
+     * @param worldToScreen The world-to-screen transform
+     * @param worldX The x-world coordinate of the tick
+     * @param worldY The y-world coordinate of the tick
+     */
+    private void paintTickY(Graphics2D g, AffineTransform worldToScreen, 
+        double worldX, double worldY)
+    {
+        TEMP_LINE.setLine(worldX, worldY, worldX+1.0, worldY);
+        Lines.transform(worldToScreen, TEMP_LINE, TEMP_LINE);
+        double length = -tickSizeScreen;
+        if (tickOrientationPositiveY)
+        {
+            length = -length;
+        }
+        Lines.scaleToLength(length, TEMP_LINE, TEMP_LINE);
+        g.draw(TEMP_LINE);
     }
     
     /**
@@ -608,22 +827,36 @@ public final class CoordinateSystemPainter implements Painter
      * @param worldToScreen The world-to-screen transform
      * @param worldX The x-world coordinate of the tick
      * @param worldY The y-world coordinate of the tick
-     * @param labelFormat The format string for the labels. If this is
-     * <code>null</code>, then no labels will be painted
      */
-    private void paintTickY(Graphics2D g, AffineTransform worldToScreen, 
-        double worldX, double worldY, String labelFormat)
+    private void paintLabelY(Graphics2D g, AffineTransform worldToScreen, 
+        double worldX, double worldY)
     {
-        line.setLine(worldX, worldY, worldX-1, worldY);
-        Lines.transform(worldToScreen, line, line);
-        Lines.scaleToLength(tickSizeScreen, line, line);
-        g.draw(line);
-        
-        if (labelFormat != null)
+        String string = String.format(labelFormatY, worldY);
+        double delta = -tickSizeWorldY;
+        if (tickOrientationPositiveY)
         {
-            String string = String.format(labelFormat, worldY);
-            labelPainterY.setLabelLocation(worldX - tickSizeWorldY, worldY);
-            labelPainterY.paint(g, worldToScreen, 0, 0, string);
+            delta = -delta;
         }
+        labelPainterY.setLabelLocation(worldX + delta, worldY);
+        labelPainterY.paint(g, worldToScreen, 0, 0, string);
     }
+    
+    
+    /**
+     * Returns the given optional value if it is not <code>Double.NaN</code>,
+     * and the given value otherwise
+     * 
+     * @param optionalValue The optional value
+     * @param value The value
+     * @return The respective value
+     */
+    private static double getValue(double optionalValue, double value)
+    {
+        if (!Double.isNaN(optionalValue))
+        {
+            return optionalValue;
+        }
+        return value;
+    }
+    
 }
