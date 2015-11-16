@@ -27,8 +27,6 @@
 package de.javagl.viewer.painters;
 
 import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
@@ -118,6 +116,7 @@ class Axes
      */
     static double computeSnappedUpValue(double value, double divisors[])
     {
+        final double epsilon = 1e-8;
         double exponent = Math.floor(Math.log10(value));
         double scaling = Math.pow(10, exponent);
         double scaledValue = value / scaling;
@@ -125,7 +124,7 @@ class Axes
         for (int i = 0; i < divisors.length; i++)
         {
             double divisor = divisors[i];
-            if (scaledValue <= divisor)
+            if (scaledValue <= divisor * (1.0 + epsilon))
             {
                 bestDivisor = divisor;
                 break;
@@ -157,6 +156,7 @@ class Axes
      */
     static double computeSnappedDownValue(double value, double divisors[])
     {
+        final double epsilon = 1e-8;
         double exponent = Math.floor(Math.log10(value));
         double scaling = Math.pow(10, exponent);
         double scaledValue = value / scaling;
@@ -164,7 +164,7 @@ class Axes
         for (int i = 0; i < divisors.length; i++)
         {
             double divisor = divisors[i];
-            if (scaledValue >= divisor)
+            if (scaledValue * (1.0 + epsilon) >= divisor)
             {
                 bestDivisor = divisor;
             }
@@ -201,7 +201,6 @@ class Axes
      * between the ticks in screen coordinates will be larger than
      * the bounds of a tick label.
      * 
-     * @param g The graphics that would be used for painting 
      * @param font The font that will used for the labels
      * @param worldToScreen The world-to-screen transform
      * @param worldMinX The minimum value for the x-axis 
@@ -212,7 +211,7 @@ class Axes
      * @return The adjusted tick distance in world coordinates
      */
     static double computeAdjustedWorldTickDistanceX(
-        Graphics g, Font font, AffineTransform worldToScreen, 
+        Font font, AffineTransform worldToScreen, 
         double worldMinX, double worldMaxX,
         double worldTickDistanceX, double minScreenTickDistanceX)
     {
@@ -223,11 +222,12 @@ class Axes
         double worldMinTickX = nMin * worldTickDistanceX;
         double worldMaxTickX = nMax * worldTickDistanceX;
     
-        FontMetrics fontMetrics = g.getFontMetrics(font);
         String stringMin = String.format(labelFormatX, worldMinTickX);
-        Rectangle2D bMin = fontMetrics.getStringBounds(stringMin, g);
+        Rectangle2D bMin = 
+            StringBoundsUtils.computeStringBounds(stringMin, font);
         String stringMax = String.format(labelFormatX, worldMaxTickX);
-        Rectangle2D bMax = fontMetrics.getStringBounds(stringMax, g);
+        Rectangle2D bMax = 
+            StringBoundsUtils.computeStringBounds(stringMax, font);
         double maxStringWidth =
             Math.max(bMin.getWidth(), bMax.getWidth()) * 1.05;
         if (maxStringWidth > minScreenTickDistanceX)

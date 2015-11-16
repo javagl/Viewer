@@ -45,6 +45,7 @@ import java.util.TreeMap;
 
 import javax.swing.JPanel;
 
+import de.javagl.geom.AffineTransforms;
 import de.javagl.geom.Points;
 import de.javagl.geom.Rectangles;
 
@@ -638,19 +639,21 @@ public class Viewer extends JPanel
     {
         final double maxScale = 1e8;
         final double minScale = 1e-8;
-        if (transform.getScaleX() > maxScale && factorX > 1.0)
+        double dx = AffineTransforms.computeDistanceX(transform, 1.0);
+        double dy = AffineTransforms.computeDistanceY(transform, 1.0);
+        if (dx > maxScale && factorX > 1.0)
         {
             return true;
         }
-        if (transform.getScaleY() > maxScale && factorY > 1.0)
+        if (dy > maxScale && factorY > 1.0)
         {
             return true;
         }
-        if (transform.getScaleX() < minScale && factorX < 1.0)
+        if (dx < minScale && factorX < 1.0)
         {
             return true;
         }
-        if (transform.getScaleY() < minScale && factorY < 1.0)
+        if (dy < minScale && factorY < 1.0)
         {
             return true;
         }

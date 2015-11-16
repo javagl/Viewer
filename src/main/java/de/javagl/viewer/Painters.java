@@ -57,136 +57,46 @@ public class Painters
         };
     }
     
-//    /**
-//     * Draw the given string into the given graphics if there is enough
-//     * space for the string. The specified anchor point is a point in
-//     * [0,1]x[0,1] that describes the point (on the bounding box of the
-//     * string, referring to the upper left point of the bounding box) 
-//     * that should be located at the given (x,y) position.
-//     * 
-//     * @param g The graphics
-//     * @param worldToScreen The world-to-screen transform
-//     * @param string The string to draw
-//     * @param stringAnchorX The x-coordinate of the string anchor
-//     * @param stringAnchorY The y-coordinate of the string anchor
-//     * @param x The x-coordinate, in world coordinates, where the string 
-//     * anchor should be placed 
-//     * @param y The y-coordinate, in world coordinates, where the string 
-//     * anchor should be placed 
-//     * @param worldSpaceX The available space in world coordinates, x-direction
-//     * @param worldSpaceY The available space in world coordinates, y-direction
-//     */
-//    public static void conditionallyDrawStringInWorld(
-//        Graphics2D g, AffineTransform worldToScreen, String string, 
-//        double stringAnchorX, double stringAnchorY, 
-//        double x, double y, 
-//        double worldSpaceX, double worldSpaceY)
-//    {
-//        double screenSpaceX = 
-//            GeomUtils.computeDistanceX(worldToScreen, worldSpaceX);
-//        double screenSpaceY = 
-//            GeomUtils.computeDistanceY(worldToScreen, worldSpaceY);
-//        conditionallyDrawStringInScreen(g, worldToScreen, string, 
-//            stringAnchorX, stringAnchorY, x, y, screenSpaceX, screenSpaceY);
-//    }
-//    
-//    /**
-//     * Draw the given string into the given graphics if there is enough
-//     * space for the string. The specified anchor point is usually a point in
-//     * [0,1]x[0,1] that describes the point (on the bounding box of the
-//     * string, referring to the upper left point of the bounding box) 
-//     * that should be located at the given (x,y) position.
-//     * 
-//     * @param g The graphics
-//     * @param worldToScreen The world-to-screen transform
-//     * @param string The string to draw
-//     * @param stringAnchorX The x-coordinate of the string anchor. Usually
-//     * a value in [0,1]
-//     * @param stringAnchorY The y-coordinate of the string anchor. Usually
-//     * a value in [0,1]
-//     * @param x The x-coordinate, in world coordinates, where the string 
-//     * anchor should be placed 
-//     * @param y The y-coordinate, in world coordinates, where the string 
-//     * anchor should be placed 
-//     * @param screenSpaceX The available space on the screen, in x-direction
-//     * @param screenSpaceY The available space on the screen, in y-direction
-//     */
-//    public static void conditionallyDrawStringInScreen(
-//        Graphics2D g, AffineTransform worldToScreen, String string, 
-//        double stringAnchorX, double stringAnchorY, 
-//        double x, double y, 
-//        double screenSpaceX, double screenSpaceY)
-//    {
-//        FontMetrics fontMetrics = g.getFontMetrics();
-//        
-//        // Compute an estimate of the string bounds
-//        double stringWidth = 0;
-//        for (int i=0; i<string.length(); i++)
-//        {
-//            stringWidth += fontMetrics.charWidth(string.charAt(i));
-//        }
-//        double stringHeight = fontMetrics.getHeight();
-//        
-//        // More precise string bounds, but much more expensive
-//        // (although still less precise and expensive than TextLayout)
-//        //Rectangle2D stringBounds = fontMetrics.getStringBounds(string, g);
-//        //double stringWidth = stringBounds.getWidth();
-//        //double stringHeight = stringBounds.getHeight();
-//        
-//        if (screenSpaceX > 1.05 * stringWidth && 
-//            screenSpaceY > 1.05 * stringHeight)
-//        {
-//            double cx = GeomUtils.computeX(worldToScreen, x, y);
-//            double cy = GeomUtils.computeY(worldToScreen, x, y);
-//            int sx = (int)(cx - stringAnchorX * stringWidth);
-//            int sy = (int)(cy - stringAnchorY * stringHeight + stringHeight);
-//            g.drawString(string, sx, sy);
-//            
-////            double sx = (cx - stringAnchorX * stringWidth);
-////            double sy = (cy - stringAnchorY * stringHeight + stringHeight);
-////            g.translate(sx, sy);
-////            g.drawString(string, 0, 0);
-////            g.translate(-sx, -sy);
-//            
-//        }
-//    }
+    /**
+     * Returns a new painter that is the composition of the given painters.
+     * 
+     * @param delegates The delegates
+     * @return The composed painter
+     */
+    public static Painter compose(Painter ... delegates)
+    {
+        return new ComposedPainter(delegates);
+    }
     
     
-//    /**
-//     * Creates an affine transform that is the concatenation of the
-//     * given transform and a scaling operation about the given factor
-//     * at the center of the given bounds. If the given input transform 
-//     * is <code>null</code>, then the identity transform will be used. 
-//     * If the given result transform is <code>null</code>, then a new 
-//     * transform will be created and returned.
-//     * 
-//     * @param affineTransform The input transform
-//     * @param bounds The bounds
-//     * @param scaling The scaling factor
-//     * @param result The transform that will store the result
-//     * @return The transform
-//     */
-//    public static AffineTransform scaleAboutCenter(
-//        AffineTransform affineTransform, Rectangle2D bounds, 
-//        double scaling, AffineTransform result)
-//    {
-//        double centerX = bounds.getCenterX();
-//        double centerY = bounds.getCenterY();
-//        if (result == null)
-//        {
-//            result = new AffineTransform();
-//        }
-//        if (affineTransform != null)
-//        {
-//            result.setTransform(affineTransform);
-//        }
-//        result.translate(centerX, centerY);
-//        result.scale(scaling, scaling);
-//        result.translate(-centerX, -centerY);
-//        return result;
-//    }
+    /**
+     * Create a {@link Painter} that calls the given delegate with a 
+     * world-to-screen transform that was concatenated with the
+     * given transform
+     * 
+     * @param delegate The delegate
+     * @param transform The transform
+     * @return The new painter
+     */
+    public static Painter createTransformed(
+        Painter delegate, AffineTransform transform)
+    {
+        return new TransformedPainter(delegate, transform);
+    }
     
-    
+    /**
+     * Create a {@link Painter} that calls the given delegate with a 
+     * world-to-screen transform that causes the contents to be 
+     * flipped vertically
+     * 
+     * @param delegate The delegate
+     * @return The new painter
+     */
+    public static Painter createFlippedVertically(Painter delegate)
+    {
+        return createTransformed(
+            delegate, AffineTransform.getScaleInstance(1, -1));
+    }
     
     
     /**

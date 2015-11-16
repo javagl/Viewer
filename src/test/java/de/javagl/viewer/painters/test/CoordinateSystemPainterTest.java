@@ -18,7 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import de.javagl.viewer.MouseControls;
+import de.javagl.viewer.Painters;
 import de.javagl.viewer.Viewer;
 import de.javagl.viewer.painters.CoordinateSystemPainter;
 
@@ -59,14 +59,12 @@ public class CoordinateSystemPainterTest
        
         
         Viewer viewer = new Viewer();
-        viewer.setMouseControl(
-            MouseControls.createDefault(viewer, false, true));
-        viewer.setFlippedVertically(true);
         
         CoordinateSystemPainter coordinateSystemPainter =
             new CoordinateSystemPainter();
         
-        viewer.addPainter(coordinateSystemPainter);
+        viewer.addPainter(
+            Painters.createFlippedVertically(coordinateSystemPainter));
         f.getContentPane().add(viewer, BorderLayout.CENTER);
 
         JPanel controlPanel = new JPanel(new GridLayout(1,2));

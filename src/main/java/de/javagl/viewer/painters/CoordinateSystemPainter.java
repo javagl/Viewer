@@ -29,7 +29,6 @@ package de.javagl.viewer.painters;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
@@ -121,10 +120,26 @@ public final class CoordinateSystemPainter implements Painter
     private final boolean adjustForStringLengths = true;
     
     /**
-     * The color for the grid. If this is <code>null</code>, then no
-     * grid will be painted 
+     * The color for the x-axis tick grid lines. If this is <code>null</code>, 
+     * then no grid lines will be painted 
      */
-    private Color gridColor = new Color(240,240,240);
+    private Color gridColorX = new Color(240,240,240);
+    
+    /**
+     * The color for the y-axis tick grid lines. If this is <code>null</code>, 
+     * then no grid lines will be painted 
+     */
+    private Color gridColorY = new Color(240,240,240);
+    
+    /**
+     * The fixed distance between ticks on the x-axis, in world coordinates
+     */
+    private double fixedWorldTickDistanceX = Double.NaN;
+    
+    /**
+     * The fixed distance between ticks on the y-axis, in world coordinates
+     */
+    private double fixedWorldTickDistanceY = Double.NaN;
     
     /**
      * The tick positions of the x-axis, in world coordinates
@@ -263,17 +278,66 @@ public final class CoordinateSystemPainter implements Painter
         labelPainterY.setFont(font);
     }
     
+    /**
+     * Set the fixed distance between ticks on the x-axis, in world coordinates.
+     * If the given value is NaN, then the distance will be computed 
+     * automatically.
+     * 
+     * @param fixedWorldTickDistanceX The tick distance
+     * @throws IllegalArgumentException If the given distance is not positive
+     */
+    public void setFixedWorldTickDistanceX(double fixedWorldTickDistanceX)
+    {
+        if (fixedWorldTickDistanceX <= 0)
+        {
+            throw new IllegalArgumentException(
+                "Tick distance must be positive, "
+                + "but is "+fixedWorldTickDistanceX);
+        }
+        this.fixedWorldTickDistanceX = fixedWorldTickDistanceX;
+    }
+
+    /**
+     * Set the fixed distance between ticks on the y-axis, in world coordinates.
+     * If the given value is NaN, then the distance will be computed 
+     * automatically.
+     * 
+     * @param fixedWorldTickDistanceY The tick distance
+     * @throws IllegalArgumentException If the given distance is not positive
+     */
+    public void setFixedWorldTickDistanceY(double fixedWorldTickDistanceY)
+    {
+        if (fixedWorldTickDistanceY <= 0)
+        {
+            throw new IllegalArgumentException(
+                "Tick distance must be positive, "
+                + "but is "+fixedWorldTickDistanceY);
+        }
+        this.fixedWorldTickDistanceY = fixedWorldTickDistanceY;
+    }
     
     /**
-     * Set the color for the grid that should be painted in the background.
-     * If the given color is <code>null</code>, then the grid will not be
-     * painted.
+     * Set the color for the grid lines that should be painted at the x-axis
+     * ticks in the background. If the given color is <code>null</code>, then 
+     * the grid lines will not be painted.
      * 
-     * @param gridColor The grid color
+     * @param gridColorX The grid color
      */
-    public void setGridColor(Color gridColor)
+    public void setGridColorX(Color gridColorX)
     {
-        this.gridColor = gridColor;
+        this.gridColorX = gridColorX;
+    }
+
+    /**
+     * Set the color for the grid lines that should be painted at the y-axis
+     * ticks in the background. If the given color is <code>null</code>, then 
+     * the grid lines will not be painted.
+     * 
+     * @param gridColorY The grid color
+     */
+    public void setGridColorY(Color gridColorY)
+    {
+        this.gridColorY = gridColorY;
     }
     
     /**
@@ -434,25 +498,27 @@ public final class CoordinateSystemPainter implements Painter
      * Update the data that is used internally for painting the x-axis, 
      * namely the {@link #worldTicksX} and the {@link #labelFormatX}
      * 
-     * @param g The graphics
      * @param worldToScreen The world-to-screen transform
      * @param worldMinX The minimum x-coordinate
      * @param worldMaxX The maximum x-coordinate
      */
-    private void updateX(Graphics g, AffineTransform worldToScreen,
+    private void updateX(AffineTransform worldToScreen,
         double worldMinX, double worldMaxX)
     {
-        
-        double worldTickDistanceX = 
-            Axes.computeWorldTickDistanceX(
+        double worldTickDistanceX = fixedWorldTickDistanceX;
+        if (!Double.isFinite(worldTickDistanceX))
+        {   
+            worldTickDistanceX = Axes.computeWorldTickDistanceX(
                 worldToScreen, minScreenTickDistanceX);
-        if (labelColorX != null && adjustForStringLengths)
-        {
-            worldTickDistanceX = 
-                Axes.computeAdjustedWorldTickDistanceX(
-                    g, font, worldToScreen, worldMinX, worldMaxX, 
-                    worldTickDistanceX, minScreenTickDistanceX);
+            if (labelColorX != null && adjustForStringLengths)
+            {
+                worldTickDistanceX = 
+                    Axes.computeAdjustedWorldTickDistanceX(
+                        font, worldToScreen, worldMinX, worldMaxX, 
+                        worldTickDistanceX, minScreenTickDistanceX);
+            }
         }
+        
         worldTicksX = Axes.computeWorldTicks(
             worldMinX, worldMaxX, worldTickDistanceX);
         if (labelColorX != null)
@@ -496,9 +562,13 @@ public final class CoordinateSystemPainter implements Painter
     private void updateY(AffineTransform worldToScreen,
         double worldMinY, double worldMaxY)
     {
-        double worldTickDistanceY = 
-            Axes.computeWorldTickDistanceY(
-                worldToScreen, minScreenTickDistanceY);
+        double worldTickDistanceY = fixedWorldTickDistanceY;
+        if (!Double.isFinite(worldTickDistanceY))
+        {
+            worldTickDistanceY = 
+                Axes.computeWorldTickDistanceY(
+                    worldToScreen, minScreenTickDistanceY);
+        }
         worldTicksY = Axes.computeWorldTicks(
             worldMinY, worldMaxY, worldTickDistanceY);
         if (labelColorY != null)
@@ -508,13 +578,26 @@ public final class CoordinateSystemPainter implements Painter
         
         if (tickOrientationPositiveY)
         {
-            labelPainterY.setLabelAnchor(0.0, 0.5);
+            if (worldToScreen.getScaleX() > 0)
+            {
+                labelPainterY.setLabelAnchor(0.0, 0.5);
+            }
+            else
+            {
+                labelPainterY.setLabelAnchor(1.0, 0.5);
+            }
         }
         else
         {
-            labelPainterY.setLabelAnchor(1.0, 0.5);
+            if (worldToScreen.getScaleX() > 0)
+            {
+                labelPainterY.setLabelAnchor(1.0, 0.5);
+            }
+            else
+            {
+                labelPainterY.setLabelAnchor(0.0, 0.5);
+            }
         }
-        
     }
     
 
@@ -527,7 +610,7 @@ public final class CoordinateSystemPainter implements Painter
             AffineTransforms.invert(worldToScreen, null);
         Rectangles.computeBounds(
             screenToWorld, screenBounds, worldBounds);
-        updateX(g, worldToScreen, worldBounds.getMinX(), worldBounds.getMaxX());
+        updateX(worldToScreen, worldBounds.getMinX(), worldBounds.getMaxX());
         updateY(worldToScreen, worldBounds.getMinY(), worldBounds.getMaxY());
         tickSizeWorldX = AffineTransforms.computeDistanceY(
             screenToWorld, tickSizeScreen);
@@ -535,10 +618,15 @@ public final class CoordinateSystemPainter implements Painter
             screenToWorld, tickSizeScreen);
         
         g.setStroke(stroke);
-        if (gridColor != null)
+        if (gridColorX != null)
         {
-            g.setColor(gridColor);
-            paintInternalGrid(g, worldToScreen);
+            g.setColor(gridColorX);
+            paintInternalGridX(g, worldToScreen);
+        }
+        if (gridColorY != null)
+        {
+            g.setColor(gridColorY);
+            paintInternalGridY(g, worldToScreen);
         }
         if (axisColorX != null)
         {
@@ -579,7 +667,7 @@ public final class CoordinateSystemPainter implements Painter
             Point2D pxMax = new Point2D.Double(screenMaxX, screenY);
             Points.inverseTransform(worldToScreen, pxMin, pxMin);
             Points.inverseTransform(worldToScreen, pxMax, pxMax);
-            updateX(g, worldToScreen, pxMin.getX(), pxMax.getX());
+            updateX(worldToScreen, pxMin.getX(), pxMax.getX());
             paintAxisX(g, worldToScreen, 
                 pxMin.getX(), pxMax.getX(), pxMin.getY());
         }
@@ -691,7 +779,7 @@ public final class CoordinateSystemPainter implements Painter
      * @param g The graphics to paint to
      * @param worldToScreen The world-to-screen transform
      */
-    private void paintInternalGrid(Graphics2D g, AffineTransform worldToScreen)
+    private void paintInternalGridX(Graphics2D g, AffineTransform worldToScreen)
     {
         double worldMinX = getValue(worldMinAxisX, worldBounds.getMinX());
         double worldMaxX = getValue(worldMaxAxisX, worldBounds.getMaxX());
@@ -706,6 +794,22 @@ public final class CoordinateSystemPainter implements Painter
                     worldMinY, worldMaxY);
             }
         }
+    }
+    
+    /**
+     * Paint the coordinate grid in the background, after it has been
+     * made sure that the data for painting the grid and axes is up
+     * to date 
+     *  
+     * @param g The graphics to paint to
+     * @param worldToScreen The world-to-screen transform
+     */
+    private void paintInternalGridY(Graphics2D g, AffineTransform worldToScreen)
+    {
+        double worldMinX = getValue(worldMinAxisX, worldBounds.getMinX());
+        double worldMaxX = getValue(worldMaxAxisX, worldBounds.getMaxX());
+        double worldMinY = getValue(worldMinAxisY, worldBounds.getMinY());
+        double worldMaxY = getValue(worldMaxAxisY, worldBounds.getMaxY());
         for (int i=0; i<worldTicksY.length; i++)
         {
             double worldTickY = worldTicksY[i];
@@ -716,6 +820,7 @@ public final class CoordinateSystemPainter implements Painter
             }
         }
     }
+    
     
     
     
@@ -777,12 +882,12 @@ public final class CoordinateSystemPainter implements Painter
     }
     
     /**
-     * Paints a single tick of the x-axis 
+     * Paints a single label of the x-axis 
      * 
      * @param g The graphics context
      * @param worldToScreen The world-to-screen transform
-     * @param worldX The x-world coordinate of the tick
-     * @param worldY The y-world coordinate of the tick
+     * @param worldX The x-world coordinate of the tick for the label
+     * @param worldY The y-world coordinate of the tick for the label
      */
     private void paintLabelX(Graphics2D g, AffineTransform worldToScreen, 
         double worldX, double worldY)
@@ -821,12 +926,12 @@ public final class CoordinateSystemPainter implements Painter
     }
     
     /**
-     * Paints a single tick of the y-axis 
+     * Paints a single label of the y-axis 
      * 
      * @param g The graphics context
      * @param worldToScreen The world-to-screen transform
-     * @param worldX The x-world coordinate of the tick
-     * @param worldY The y-world coordinate of the tick
+     * @param worldX The x-world coordinate of the tick for the label
+     * @param worldY The y-world coordinate of the tick for the label
      */
     private void paintLabelY(Graphics2D g, AffineTransform worldToScreen, 
         double worldX, double worldY)

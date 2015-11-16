@@ -33,7 +33,8 @@ the viewer.
   * Added zoom limiting in `Viewer` to prevent rendering errors for very
     large or very small zooming factors
   * Added the `painters` package, containing default `Painter` implementations
-   
+  * Added methods in the `Painters` class to create transformed and 
+    composed `Painter` instances.
 
 0.0.2 : 
 
