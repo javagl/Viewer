@@ -77,11 +77,17 @@ class Axes
      * @param worldMax The maximum world coordinate on the axis
      * @param worldTickDistance The distance that two ticks
      * should have in world coordinates
-     * @return The world coordinates for the ticks
+     * @return The world coordinates for the ticks. If the given worldMax
+     * value is smaller than the worldMin, then an empty array will be
+     * returned.
      */
     static double[] computeWorldTicks(
         double worldMin, double worldMax, double worldTickDistance)
     {
+        if (worldMax < worldMin)
+        {
+            return new double[0];
+        }
         long nMin = (long) Math.ceil(worldMin / worldTickDistance);
         long nMax = (long) Math.floor(worldMax / worldTickDistance);
         int n = (int) (nMax - nMin + 1);
