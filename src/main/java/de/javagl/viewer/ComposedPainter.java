@@ -50,7 +50,6 @@ class ComposedPainter implements Painter
      * Create a new painter that is a composition of the given painters
      * 
      * @param delegates The delegate painters
-     * @param transform The transform
      */
     ComposedPainter(Painter ... delegates)
     {
