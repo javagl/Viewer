@@ -70,9 +70,16 @@ public final class LabelPainter implements ObjectPainter<String>
         private final Rectangle2D labelBounds;
         
         /**
-         * The affine transform
+         * The affine transform that will be applied to the graphics 
+         * before the label is painted
          */
-        private final AffineTransform affineTransform;
+        private final AffineTransform labelTransform;
+        
+        /**
+         * The affine transform that was passed to the painting method
+         * of the {@link LabelPainter}
+         */
+        private final AffineTransform worldToScreenTransform;
         
         /**
          * Default constructor
@@ -81,7 +88,8 @@ public final class LabelPainter implements ObjectPainter<String>
         {
             label = "";
             labelBounds = new Rectangle2D.Double();
-            affineTransform = new AffineTransform();
+            labelTransform = new AffineTransform();
+            worldToScreenTransform = new AffineTransform();
         }
         
         /**
@@ -109,12 +117,27 @@ public final class LabelPainter implements ObjectPainter<String>
         /**
          * Returns a reference to the affine transform that will be applied
          * to the graphics context before the label is painted at the origin.
+         * If the calling {@link LabelPainter} is 
+         * {@link LabelPainter#isTransformingLabels() transforming the labels}, 
+         * then this will include the world to screen transform.
          * 
          * @return The affine transform
          */
-        public AffineTransform getAffineTransform()
+        public AffineTransform getLabelTransform()
         {
-            return affineTransform;
+            return labelTransform;
+        }
+
+        /**
+         * Returns a reference to an affine transform that is equal to
+         * the transform that was passed to the painting method of
+         * the {@link LabelPainter}
+         * 
+         * @return The affine transform
+         */
+        public AffineTransform getWorldToScreenTransform()
+        {
+            return worldToScreenTransform;
         }
         
         /**
@@ -138,13 +161,23 @@ public final class LabelPainter implements ObjectPainter<String>
         }
         
         /**
-         * Set the affine transform
+         * Set the label transform. 
          * 
-         * @param affineTransform The affine transform
+         * @param transform The label transform
          */
-        void setAffineTransform(AffineTransform affineTransform)
+        void setLabelTransform(AffineTransform transform)
         {
-            this.affineTransform.setTransform(affineTransform);
+            this.labelTransform.setTransform(transform);
+        }
+        
+        /**
+         * Set the world to screen transform
+         * 
+         * @param transform The transform
+         */
+        void setWorldToScreenTransform(AffineTransform transform)
+        {
+            this.worldToScreenTransform.setTransform(transform);
         }
         
     }
@@ -470,7 +503,8 @@ public final class LabelPainter implements ObjectPainter<String>
         {
             labelPaintState.setLabel(string);
             labelPaintState.setLabelBounds(labelBounds);
-            labelPaintState.setAffineTransform(TEMP_AFFINE_TRANSFORM);
+            labelPaintState.setLabelTransform(TEMP_AFFINE_TRANSFORM);
+            labelPaintState.setWorldToScreenTransform(worldToScreen);
             boolean shouldPaint = labelPaintingCondition.test(labelPaintState);
             if (!shouldPaint)
             {
@@ -519,7 +553,8 @@ public final class LabelPainter implements ObjectPainter<String>
         {
             labelPaintState.setLabel(string);
             labelPaintState.setLabelBounds(labelBounds);
-            labelPaintState.setAffineTransform(TEMP_AFFINE_TRANSFORM);
+            labelPaintState.setLabelTransform(TEMP_AFFINE_TRANSFORM);
+            labelPaintState.setWorldToScreenTransform(worldToScreen);
             boolean shouldPaint = labelPaintingCondition.test(labelPaintState);
             if (!shouldPaint)
             {

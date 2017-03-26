@@ -235,12 +235,12 @@ public final class CoordinateSystemPainter implements Painter
     /**
      * The x-coordinate where the y-axis should be, in world coordinates
      */
-    private final double worldXofY = 0.0;
+    private double worldXofY = 0.0;
 
     /**
      * The y-coordinate where the x-axis should be, in world coordinates
      */
-    private final double worldYofX = 0.0;
+    private double worldYofX = 0.0;
     
     /**
      * Whether ticks on the x-axis should be oriented along the positive y-axis
@@ -390,6 +390,16 @@ public final class CoordinateSystemPainter implements Painter
         this.worldMaxAxisX = worldMaxAxisX;
     }
     
+    /**
+     * Set the location where the x-axis should be painted
+     *  
+     * @param worldYofX The y-coordinate where the x-axis should be painted
+     */
+    public void setAxisLocationX(double worldYofX)
+    {
+        this.worldYofX = worldYofX;
+    }
+    
     
     /**
      * Set the layout for the x-axis. The given suppliers will provide
@@ -453,6 +463,16 @@ public final class CoordinateSystemPainter implements Painter
     {
         this.worldMinAxisY = worldMinAxisY;
         this.worldMaxAxisY = worldMaxAxisY;
+    }
+    
+    /**
+     * Set the location where the y-axis should be painted
+     *  
+     * @param worldXofY The x-coordinate where the y-axis should be painted
+     */
+    public void setAxisLocationY(double worldXofY)
+    {
+        this.worldXofY = worldXofY;
     }
 
     /**

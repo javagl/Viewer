@@ -26,11 +26,8 @@
  */
 package de.javagl.viewer.painters;
 
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 import java.util.function.Predicate;
 
-import de.javagl.geom.AffineTransforms;
 import de.javagl.viewer.painters.LabelPainter.LabelPaintState;
 
 /**
@@ -39,6 +36,34 @@ import de.javagl.viewer.painters.LabelPainter.LabelPaintState;
  */
 public class LabelPainterPredicates
 {
+    /**
+     * Returns a new {@link GeneralLabelPainterPredicate} that allows setting
+     * the painting conditions for the labels based on the size of the label
+     * in world- and screen coordinates.
+     * 
+     * @return The {@link GeneralLabelPainterPredicate}
+     */
+    public static GeneralLabelPainterPredicate create()
+    {
+        return new GeneralLabelPainterPredicate();
+    }
+    
+    /**
+     * Returns a predicate that causes labels to be painted when their 
+     * (untransformed) width is not smaller than the given minimum
+     * 
+     * @param minimumLabelWidth The maximum label width
+     * @return The predicate
+     */
+    public static Predicate<LabelPaintState> labelWidthAtLeast(
+        double minimumLabelWidth)
+    {
+        GeneralLabelPainterPredicate predicate = 
+            new GeneralLabelPainterPredicate();
+        predicate.setMinimumWorldWidth(minimumLabelWidth);
+        return predicate;
+    }
+
     /**
      * Returns a predicate that causes labels to be painted when their 
      * (untransformed) width is not greater than the given maximum
@@ -49,42 +74,44 @@ public class LabelPainterPredicates
     public static Predicate<LabelPaintState> labelWidthAtMost(
         double maximumLabelWidth)
     {
-        return new Predicate<LabelPaintState>()
-        {
-            @Override
-            public boolean test(LabelPaintState labelPaintState)
-            {
-                Rectangle2D labelBounds = labelPaintState.getLabelBounds();
-                return labelBounds.getWidth() <= maximumLabelWidth;
-            }
-        };
+        GeneralLabelPainterPredicate predicate = 
+            new GeneralLabelPainterPredicate();
+        predicate.setMaximumWorldWidth(maximumLabelWidth);
+        return predicate;
     }
     
     /**
      * Returns a predicate that causes labels to be painted when their 
      * (transformed) width is at least the given minimum.
      * 
-     * @param minimumTransformedLabelWidth The maximum label width
+     * @param minimumTransformedLabelWidth The minimum label width
      * @return The predicate
      */
     public static Predicate<LabelPaintState> transformedLabelWidthAtLeast(
         double minimumTransformedLabelWidth)
     {
-        return new Predicate<LabelPaintState>()
-        {
-            @Override
-            public boolean test(LabelPaintState labelPaintState)
-            {
-                Rectangle2D labelBounds = labelPaintState.getLabelBounds();
-                AffineTransform affineTransform = 
-                    labelPaintState.getAffineTransform();
-                double transformedLabelWidth = 
-                    AffineTransforms.computeDistanceX(
-                        affineTransform, labelBounds.getWidth());
-                return transformedLabelWidth >= minimumTransformedLabelWidth;
-            }
-        };
+        GeneralLabelPainterPredicate predicate = 
+            new GeneralLabelPainterPredicate();
+        predicate.setMinimumScreenWidth(minimumTransformedLabelWidth);
+        return predicate;
     }
+    
+    /**
+     * Returns a predicate that causes labels to be painted when their 
+     * (transformed) width is at most the given maximum.
+     * 
+     * @param maximumTransformedLabelWidth The minimum label width
+     * @return The predicate
+     */
+    public static Predicate<LabelPaintState> transformedLabelWidthAtMost(
+        double maximumTransformedLabelWidth)
+    {
+        GeneralLabelPainterPredicate predicate = 
+            new GeneralLabelPainterPredicate();
+        predicate.setMaximumScreenWidth(maximumTransformedLabelWidth);
+        return predicate;
+    }
+    
     
     /**
      * Private constructor to prevent instantiation
