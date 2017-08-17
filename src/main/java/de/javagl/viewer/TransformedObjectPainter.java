@@ -1,5 +1,5 @@
 /*
- * www.javagl.de - Viewer
+ * www.javagl.de - Viewer - Glyphs
  *
  * Copyright (c) 2013-2015 Marco Hutter - http://www.javagl.de
  * 
@@ -29,18 +29,22 @@ package de.javagl.viewer;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 /**
- * Implementation of a {@link Painter} that calls a delegate painter
- * after applying a transform to the given world-to-screen transform
+ * Implementation of an {@link ObjectPainter} that delegates the painting
+ * to another {@link ObjectPainter}, and allows setting an additional
+ * transform. 
+ * 
+ * @param <T> The type of the painted objects
  */
-public class TransformedPainter implements Painter
+public final class TransformedObjectPainter<T> implements ObjectPainter<T>
 {
     /**
-     * The delegate {@link Painter}
+     * The delegate {@link ObjectPainter}
      */
-    private final Painter delegatePainter;
-    
+    private final ObjectPainter<T> delegatePainter;
+
     /**
      * The transform that should be applied
      */
@@ -52,28 +56,46 @@ public class TransformedPainter implements Painter
     private final AffineTransform delegateWorldToScreen;
     
     /**
-     * Create a new transformed painter with the given delegate and transform.
-     * If the given transform is <code>null</code>, then the identity 
-     * transform will be used initially.
-     * 
-     * @param delegatePainter The delegate painter
-     * @param transform The transform
+     * The consumer that will receive the object to be painted, and the
+     * transform that will be applied to the delegate, and that may 
+     * update the transform based on the object
      */
-    public TransformedPainter(
-        Painter delegatePainter, AffineTransform transform)
+    private final BiConsumer<T, AffineTransform> transformUpdate;
+    
+    /**
+     * Creates a new transformed object painter
+     *  
+     * @param delegatePainter The delegate
+     */
+    public TransformedObjectPainter(ObjectPainter<T> delegatePainter)
     {
-        this.delegatePainter = Objects.requireNonNull(
-            delegatePainter, "The delegatePainter may not be null");
-        this.transform = new AffineTransform();
-        if (transform != null)
-        {
-            this.transform.setTransform(transform);
-        }
-        this.delegateWorldToScreen = new AffineTransform(); 
+        this(delegatePainter, null);
     }
     
     /**
-     * Set the transform of this painter 
+     * Creates a new transformed object painter
+     *  
+     * @param delegatePainter The delegate
+     * @param transformUpdate The optional transform update
+     */
+    public TransformedObjectPainter(
+        ObjectPainter<T> delegatePainter, 
+        BiConsumer<T, AffineTransform> transformUpdate)
+    {
+        this.delegatePainter = Objects.requireNonNull(
+            delegatePainter, "The delegate may not be null");
+        this.transformUpdate = transformUpdate;
+        this.transform = new AffineTransform();
+        this.delegateWorldToScreen = new AffineTransform();
+    }
+    
+    /**
+     * Set the transform that this painter should apply to be the same
+     * as the given one.<br>
+     * <br>
+     * Note: If the transform update function that was given in the
+     * constructor was not <code>null</code>, then this transform will
+     * be ignored. 
      * 
      * @param transform The transform
      */
@@ -82,14 +104,17 @@ public class TransformedPainter implements Painter
         this.transform.setTransform(transform);
     }
     
-
     @Override
-    public void paint(Graphics2D g, 
-        AffineTransform worldToScreen, double w, double h)
+    public void paint(Graphics2D g, AffineTransform worldToScreen, 
+        double w, double h, T object)
     {
         delegateWorldToScreen.setTransform(worldToScreen);
+        if (transformUpdate != null)
+        {
+            transformUpdate.accept(object, transform);
+        }
         delegateWorldToScreen.concatenate(transform);
-        delegatePainter.paint(g, delegateWorldToScreen, w, h);
+        delegatePainter.paint(g, delegateWorldToScreen, w, h, object);
     }
-    
+
 }
