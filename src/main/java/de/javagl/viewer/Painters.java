@@ -28,6 +28,9 @@ package de.javagl.viewer;
 
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+
+import de.javagl.geom.AffineTransforms;
 
 /**
  * Methods related to {@link Painter}s and {@link ObjectPainter}s
@@ -97,6 +100,48 @@ public class Painters
         return createTransformed(
             delegate, AffineTransform.getScaleInstance(1, -1));
     }
+    
+    /**
+     * Create a {@link Painter} that calls the given delegate with a 
+     * world-to-screen transform that causes the specified rectangle
+     * to fill the unit square.
+     * 
+     * @param delegate The delegate
+     * @param rectangle The rectangle
+     * @return The new painter
+     */
+    public static Painter createNormalized(Painter delegate, 
+        Rectangle2D rectangle)
+    {
+        return createNormalized(delegate, 
+            rectangle.getMinX(), 
+            rectangle.getMinY(), 
+            rectangle.getMaxX(), 
+            rectangle.getMaxY());
+    }
+    
+    /**
+     * Create a {@link Painter} that calls the given delegate with a 
+     * world-to-screen transform that causes the specified rectangle
+     * to fill the unit square.
+     * 
+     * @param delegate The delegate
+     * @param minX The minimum x-coordinate
+     * @param minY The minimum y-coordinate
+     * @param maxX The maximum x-coordinate 
+     * @param maxY The maximum y-coordinate 
+     * @return The new painter
+     */
+    public static Painter createNormalized(Painter delegate, 
+        double minX, double minY, double maxX, double maxY)
+    {
+        AffineTransform transform = 
+            AffineTransforms.getScaleInstance(minX, minY, maxX, maxY, null);
+        AffineTransforms.invert(transform, transform);
+        return createTransformed(delegate, transform);
+    }
+
+    
     
     
     /**
