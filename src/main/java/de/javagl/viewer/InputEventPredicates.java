@@ -35,14 +35,14 @@ import java.util.function.Predicate;
  * <br>
  * This class is not part of the public API, and may be omitted in the future.
  */
-class InputEventPredicates
+public class InputEventPredicates
 {
     /**
      * Returns a predicate that is always false
      * 
      * @return The predicate
      */
-    static <T> Predicate<T> alwaysFalse()
+    public static <T> Predicate<T> alwaysFalse()
     {
         return Predicates.create(t -> false, "false");
     }
@@ -52,7 +52,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T> Predicate<T> alwaysTrue()
+    public static <T> Predicate<T> alwaysTrue()
     {
         return Predicates.create(t -> true, "true");
     }
@@ -63,7 +63,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> mousePressed()
+    public static <T extends InputEvent> Predicate<T> mousePressed()
     {
         return Predicates.create(
             t -> t.getID() == MouseEvent.MOUSE_PRESSED, "mousePressed");
@@ -75,7 +75,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> mouseReleased()
+    public static <T extends InputEvent> Predicate<T> mouseReleased()
     {
         return Predicates.create(
             t -> t.getID() == MouseEvent.MOUSE_RELEASED, "mouseReleased");
@@ -87,7 +87,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> mouseClicked()
+    public static <T extends InputEvent> Predicate<T> mouseClicked()
     {
         return Predicates.create(
             t -> t.getID() == MouseEvent.MOUSE_CLICKED, "mouseClicked");
@@ -99,7 +99,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> mouseMoved()
+    public static <T extends InputEvent> Predicate<T> mouseMoved()
     {
         return Predicates.create(
             t -> t.getID() == MouseEvent.MOUSE_MOVED, "mouseMoved");
@@ -123,7 +123,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> mouseWheel()
+    public static <T extends InputEvent> Predicate<T> mouseWheel()
     {
         return Predicates.create(
             t -> t.getID() == MouseEvent.MOUSE_WHEEL, "mouseWheel");
@@ -135,7 +135,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> shiftDown()
+    public static <T extends InputEvent> Predicate<T> shiftDown()
     {
         return Predicates.create(
             t -> t.isShiftDown(), "shiftDown");
@@ -147,7 +147,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> altDown()
+    public static <T extends InputEvent> Predicate<T> altDown()
     {
         return Predicates.create(
             t -> t.isAltDown(), "altDown");
@@ -159,7 +159,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> altGraphDown()
+    public static <T extends InputEvent> Predicate<T> altGraphDown()
     {
         return Predicates.create(
             t -> t.isAltGraphDown(), "altGraphDown");
@@ -171,7 +171,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> controlDown()
+    public static <T extends InputEvent> Predicate<T> controlDown()
     {
         return Predicates.create(
             t -> t.isControlDown(), "controlDown");
@@ -183,7 +183,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends InputEvent> Predicate<T> metaDown()
+    public static <T extends InputEvent> Predicate<T> metaDown()
     {
         return Predicates.create(
             t -> t.isMetaDown(), "metaDown");
@@ -195,7 +195,7 @@ class InputEventPredicates
      * 
      * @return The predicate
      */
-    static <T extends MouseEvent> Predicate<T> popupTrigger()
+    public static <T extends MouseEvent> Predicate<T> popupTrigger()
     {
         return Predicates.create(
             t -> t.isPopupTrigger(), "popupTrigger");
@@ -209,7 +209,7 @@ class InputEventPredicates
      * @return The predicate
      * @throws IllegalArgumentException If the given button is not 1, 2 or 3
      */
-    static <T extends InputEvent> Predicate<T> buttonDown(int button)
+    public static <T extends InputEvent> Predicate<T> buttonDown(int button)
     {
         return Predicates.create(
             t -> is(t, maskForButton(button)), "buttonDown("+button+")");
