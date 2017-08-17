@@ -28,6 +28,7 @@ package de.javagl.viewer;
 
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -53,7 +54,7 @@ class ComposedPainter implements Painter
      */
     ComposedPainter(Painter ... delegates)
     {
-        this.delegates = Arrays.asList(delegates);
+        this.delegates = new ArrayList<Painter>(Arrays.asList(delegates));
         this.delegateWorldToScreen = new AffineTransform(); 
     }
 
