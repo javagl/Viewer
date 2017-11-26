@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.javagl</groupId>
 		<artifactId>viewer-parent</artifactId>
-		<version>0.1.0</version>
+		<version>0.1.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>viewer-glyphs</artifactId>
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>de.javagl</groupId>
 			<artifactId>viewer-core</artifactId>
-			<version>0.1.0</version>
+			<version>0.1.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
