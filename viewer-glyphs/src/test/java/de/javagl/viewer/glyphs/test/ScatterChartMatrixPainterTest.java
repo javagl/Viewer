@@ -68,7 +68,8 @@ public class ScatterChartMatrixPainterTest
             @Override
             public String getLabel(int row, int col)
             {
-                return String.valueOf(headers[row])+"/"+String.valueOf(headers[col]);
+                return String.valueOf(headers[row]) + "/"
+                    + String.valueOf(headers[col]);
             }
             
             @Override

@@ -35,6 +35,7 @@ import java.awt.geom.Rectangle2D;
 
 import de.javagl.geom.AffineTransforms;
 import de.javagl.viewer.ObjectPainter;
+import de.javagl.viewer.painters.CoordinateSystemPainter;
 import de.javagl.viewer.painters.GeneralLabelPainterPredicate;
 import de.javagl.viewer.painters.LabelPainter;
 
@@ -48,17 +49,39 @@ public final class ScatterChartMatrixPainter
     /**
      * A transform, used internally for painting
      */
-    private static final AffineTransform TEMP_TRANSFORM = new AffineTransform();
+    private static final AffineTransform TEMP_TRANSFORM = 
+        new AffineTransform();
+    
+    /**
+     * A unit rectangle
+     */
+    private static final Rectangle2D UNIT_RECTANGLE = 
+        new Rectangle2D.Double(0,0,1,1);
     
     /**
      * The paint that should be used for the border of the charts.
      * If this is <code>null</code>, then no borders will be painted.
      */
-    private Paint borderPaint = null;
+    private Paint borderPaint = Color.GRAY;
     
+    /**
+     * The relative spacing for the top border of the scatter chart cells
+     */
     private double borderSpacingTop = 0.08;
+
+    /**
+     * The relative spacing for the bottom border of the scatter chart cells
+     */
     private double borderSpacingBottom = 0.025;
+
+    /**
+     * The relative spacing for the left border of the scatter chart cells
+     */
     private double borderSpacingLeft = 0.025;
+
+    /**
+     * The relative spacing for the right border of the scatter chart cells
+     */
     private double borderSpacingRight = 0.025;
     
     /**
@@ -71,7 +94,17 @@ public final class ScatterChartMatrixPainter
      */
     private final ScatterChartPainter scatterChartPainter;
     
+    /**
+     * The predicate that will determine whether the labels for the
+     * scatter charts will be painted
+     */
     private final GeneralLabelPainterPredicate generalLabelPainterPredicate;
+    
+    /**
+     * Whether a {@link CoordinateSystemPainter} should be used to paint
+     * coordinate axes along the outer borders of the scatter charts
+     */
+    private boolean showingDefaultCoordinateSystems = true;
     
     /**
      * Default constructor
@@ -89,6 +122,18 @@ public final class ScatterChartMatrixPainter
         this.labelPainter.setLabelPaintingCondition(
             generalLabelPainterPredicate);
         this.scatterChartPainter = new ScatterChartPainter();
+    }
+    
+    /**
+     * Set whether a {@link CoordinateSystemPainter} should be used to paint
+     * coordinate axes along the outer borders of the scatter charts
+     * 
+     * @param showingDefaultCoordinateSystems The painting state
+     */
+    public void setShowingDefaultCoordinateSystems(
+        boolean showingDefaultCoordinateSystems)
+    {
+        this.showingDefaultCoordinateSystems = showingDefaultCoordinateSystems;
     }
     
     /**
@@ -112,62 +157,121 @@ public final class ScatterChartMatrixPainter
 //        g.setColor(Color.GREEN);
 //        g.draw(worldToScreen.createTransformedShape(
 //            new Rectangle2D.Double(0, 0, 1, 1)));
+        
+        CoordinateSystemPainter coordinateSystemPainter = null;
+        if (showingDefaultCoordinateSystems)
+        {
+            coordinateSystemPainter = new CoordinateSystemPainter();
+            coordinateSystemPainter.setGridColorX(null);
+            coordinateSystemPainter.setGridColorY(null);
+        }
 
         int n = scatterChartMatrix.getNumCharts();
         double cellSize = 1.0 / n;
         double chartScaleX = 1.0 - borderSpacingLeft - borderSpacingRight;
         double chartScaleY = 1.0 - borderSpacingTop - borderSpacingBottom;
-        for (int r=0; r<n; r++)
+        for (int r = 0; r < n; r++)
         {
-            for (int c=0; c<n; c++)
+            for (int c = 0; c < n; c++)
             {
                 ScatterChart scatterChart = scatterChartMatrix.getChart(r, c);
-                if (scatterChart != null)
+                if (scatterChart == null)
                 {
-                    //scatterChartPainter.setPaintingAxisX(r == n - 1);
-                    //scatterChartPainter.setPaintingAxisY(c == 0);
-
-                    TEMP_TRANSFORM.setTransform(worldToScreen);
-                    TEMP_TRANSFORM.translate(c * cellSize, r * cellSize);
-                    TEMP_TRANSFORM.scale(cellSize, cellSize);
-                    
-                    String label = scatterChartMatrix.getLabel(r, c);
-                    if (label != null)
-                    {
-                        double availableScreenSpaceY = 
-                            AffineTransforms.computeDistanceY(
-                                TEMP_TRANSFORM, borderSpacingTop);
-                        generalLabelPainterPredicate.setMaximumScreenHeight(
-                            availableScreenSpaceY);
-                        labelPainter.paint(g, TEMP_TRANSFORM, w, h, label);
-                    }
-                    
-                    TEMP_TRANSFORM.translate(
-                        borderSpacingLeft, borderSpacingTop);
-                    TEMP_TRANSFORM.scale(chartScaleX, chartScaleY);
-                    
-                    g.setColor(Color.LIGHT_GRAY);
-                    g.draw(TEMP_TRANSFORM.createTransformedShape(
-                        new Rectangle2D.Double(0, 0, 1, 1)));
-                    
-                    Rectangle2D bounds = 
-                        ScatterCharts.computeBounds(scatterChart);
-                    AffineTransform at = 
-                        AffineTransforms.getScaleInstance(bounds, null); 
-                    AffineTransforms.invert(at, at);
-                    TEMP_TRANSFORM.concatenate(at);
-                    
-                    scatterChartPainter.paint(
-                        g, TEMP_TRANSFORM, w, h, scatterChart);
-                    
+                    continue;
                 }
+
+                TEMP_TRANSFORM.setTransform(worldToScreen);
+                TEMP_TRANSFORM.translate(c * cellSize, r * cellSize);
+                TEMP_TRANSFORM.scale(cellSize, cellSize);
+
+                String label = scatterChartMatrix.getLabel(r, c);
+                if (label != null)
+                {
+                    double availableScreenSpaceY = 
+                        AffineTransforms.computeDistanceY(
+                            TEMP_TRANSFORM, borderSpacingTop);
+                    generalLabelPainterPredicate.setMaximumScreenHeight(
+                        availableScreenSpaceY);
+                    labelPainter.paint(g, TEMP_TRANSFORM, w, h, label);
+                }
+
+                TEMP_TRANSFORM.translate(
+                    borderSpacingLeft, borderSpacingTop);
+                TEMP_TRANSFORM.scale(chartScaleX, chartScaleY);
+
+                if (borderPaint != null)
+                {
+                    g.setPaint(borderPaint);
+                    g.draw(TEMP_TRANSFORM.createTransformedShape(
+                        UNIT_RECTANGLE));
+                }
+
+                
+                // Compute the transform to bring the whole scatter
+                // chart into the current grid cell
+                Rectangle2D bounds = 
+                    ScatterCharts.computeBounds(scatterChart);
+                sanitize(bounds);
+                TEMP_TRANSFORM.scale(
+                    1.0 / bounds.getWidth(), 
+                    -1.0 / bounds.getHeight());
+                TEMP_TRANSFORM.translate(
+                    -bounds.getMinX(), -bounds.getMaxY());
+                
+                if (showingDefaultCoordinateSystems)
+                {
+                    // Set the axis configuration of the coordinate system 
+                    // painter to display the range for the scatter chart
+                    coordinateSystemPainter.setAxisLocationY(bounds.getMinX());
+                    coordinateSystemPainter.setAxisLocationX(bounds.getMinY());
+                    coordinateSystemPainter.setAxisRangeX(
+                        bounds.getMinX(), bounds.getMaxX());
+                    coordinateSystemPainter.setAxisRangeY(
+                        bounds.getMinY(), bounds.getMaxY());
+    
+                    if (c == 0)
+                    {
+                        coordinateSystemPainter.setAxisColorY(Color.GRAY);
+                    }
+                    else
+                    {
+                        coordinateSystemPainter.setAxisColorY(null);
+                    }
+                    if (r == (n-1))
+                    {
+                        coordinateSystemPainter.setAxisColorX(Color.GRAY);
+                    }
+                    else
+                    {
+                        coordinateSystemPainter.setAxisColorX(null);
+                    }
+                    coordinateSystemPainter.paint(g, TEMP_TRANSFORM, w, h);
+                }
+                
+                scatterChartPainter.paint(
+                    g, TEMP_TRANSFORM, w, h, scatterChart);
+
             }
         }
-        
     }
-
-
     
-    
-    
+    /**
+     * Sanitize the given rectangle for scaling operations. If the width or 
+     * the height of the given rectangle is smaller than a small epsilon,
+     * then it will be set to 1.0, respectively
+     * 
+     * @param r The rectangle
+     */
+    private static void sanitize(Rectangle2D r)
+    {
+        final double epsilon = 1e-8;
+        if (r.getWidth() < epsilon)
+        {
+            r.setRect(r.getX(), r.getY(), 1.0, r.getHeight());
+        }
+        if (r.getHeight() < epsilon)
+        {
+            r.setRect(r.getX(), r.getY(),r.getWidth(), 1.0);
+        }
+    }
 }
