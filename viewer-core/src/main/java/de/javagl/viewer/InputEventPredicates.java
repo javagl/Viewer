@@ -238,6 +238,25 @@ public class InputEventPredicates
     }
     
     /**
+     * Returns a predicate that checks whether the given input event
+     * was created without any modifier key pressed. This means that
+     * the event was created without SHIFT, ALT, ALT-GR, CTRL key 
+     * being pressed.
+     * 
+     * @return The predicate
+     */
+    public static <T extends InputEvent> Predicate<T> noModifiers()
+    {
+        return Predicates.create(t -> 
+            !t.isShiftDown() && 
+            !t.isAltDown() &&
+            !t.isAltGraphDown() &&
+            !t.isControlDown(),
+            "noModifiers");
+    
+    }
+    
+    /**
      * Returns whether the specified flags are set in the extended modifiers
      * of the given event
      * 

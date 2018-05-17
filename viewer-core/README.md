@@ -28,7 +28,13 @@ the viewer.
 
 # Changes
 
-0.1.0-SNAPSHOT :
+0.X.X :
+  * The default `MouseControl` now allows rotation and translation
+    only when no modifier (SHIFT, ALT, ALT-GR or CTRL) is pressed.
+    This allows adding specific functionality for the cases where
+    these modifiers are pressed.
+
+0.1.0 :
   * Project restructuring, combining the different viewer libraries
 
 0.0.3 : 

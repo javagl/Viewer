@@ -70,15 +70,17 @@ class DefaultMouseControl extends MouseInputAdapter implements MouseControl
      * The predicate that is checked for a mouse drag event to determine
      * whether a translation should be done
      */
-    private final Predicate<MouseEvent> translatePredicate =
-        InputEventPredicates.buttonDown(3);
+    private final Predicate<MouseEvent> translatePredicate = Predicates.and(
+        InputEventPredicates.buttonDown(3),
+        InputEventPredicates.noModifiers());
     
     /**
      * The predicate that is checked for a mouse drag event to determine
      * whether a rotation should be done
      */
-    private Predicate<MouseEvent> rotatePredicate =
-        InputEventPredicates.buttonDown(1);
+    private Predicate<MouseEvent> rotatePredicate = Predicates.and(
+        InputEventPredicates.buttonDown(1),
+        InputEventPredicates.noModifiers());
 
     /**
      * The predicate that is checked for a mouse wheel event to determine
@@ -113,7 +115,9 @@ class DefaultMouseControl extends MouseInputAdapter implements MouseControl
     {
         if (rotationAllowed)
         {
-            this.rotatePredicate = InputEventPredicates.buttonDown(1);
+            this.rotatePredicate = Predicates.and(
+                InputEventPredicates.buttonDown(1),
+                InputEventPredicates.noModifiers());
         }
         else
         {

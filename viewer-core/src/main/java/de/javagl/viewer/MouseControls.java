@@ -49,8 +49,8 @@ public class MouseControls
      * <br>
      * The default interaction pattern is as follows:
      * <ul>
-     *   <li>Left mouse drags: Rotate</li>
-     *   <li>Right mouse drags: Translate</li>
+     *   <li>Left mouse drags (without modifiers): Rotate</li>
+     *   <li>Right mouse drags (without modifiers): Translate</li>
      *   <li>
      *     Mouse wheel: Zoom uniformly
      *     <ul>
