@@ -22,7 +22,7 @@ sufficient to create a simple plot:
 
 # Changes
 
-0.1.0-SNAPSHOT :
+0.1.0 :
   * Project restructuring, combining the different viewer libraries
 
 0.0.2 : 

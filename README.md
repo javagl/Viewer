@@ -9,7 +9,7 @@ Java Swing viewers
 
 # Changes
 
-0.1.0-SNAPSHOT :
+0.1.0 :
   * Project restructuring, combining the different viewer libraries
 
 
