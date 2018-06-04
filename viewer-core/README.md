@@ -28,7 +28,10 @@ the viewer.
 
 # Changes
 
-0.X.X :
+0.X.X : 
+  * ...
+
+0.1.1 :
   * The default `MouseControl` now allows rotation and translation
     only when no modifier (SHIFT, ALT, ALT-GR or CTRL) is pressed.
     This allows adding specific functionality for the cases where

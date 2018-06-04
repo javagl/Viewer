@@ -6,7 +6,10 @@ Classes for painting glyphs.
 
 # Changes
 
-0.X.X:
+0.X.X: 
+  * ...
+
+0.1.1:
   * Added coordinate systems to `ScatterChartMatrixPainter`
 
 0.1.0:
