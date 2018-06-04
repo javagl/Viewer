@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.javagl</groupId>
 		<artifactId>viewer-parent</artifactId>
-		<version>0.1.1-SNAPSHOT</version>
+		<version>0.1.1</version>
 	</parent>
 
 	<artifactId>viewer-cells</artifactId>
@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>de.javagl</groupId>
 			<artifactId>viewer-core</artifactId>
-			<version>0.1.1-SNAPSHOT</version>
+			<version>0.1.1</version>
 		</dependency>
 	</dependencies>
 
