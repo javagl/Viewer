@@ -12,7 +12,7 @@ transformation as an `AffineTransform`, and may paint the
 the transformed elements.
 
 The basic usage is demonstrated in the 
-[ViewerTest](https://github.com/javagl/Viewer/blob/master/src/test/java/de/javagl/viewer/test/ViewerTest.java)
+[ViewerTest](https://github.com/javagl/Viewer/blob/master/viewer-core/src/test/java/de/javagl/viewer/test/ViewerTest.java)
 class, which also demonstrates some of the additional 
 capabilities, and uses two implementations of the 
 `Painter` interface to show the crucial difference between

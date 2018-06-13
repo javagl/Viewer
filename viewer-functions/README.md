@@ -4,13 +4,13 @@ A simple function plotter
 
 ![ViewerFunctionsScreenshot01.png](/screenshots/ViewerFunctionsScreenshot01.png)
 
-The [FunctionPanel](https://github.com/javagl/ViewerFunctions/blob/master/src/main/java/de/javagl/viewer/functions/FunctionPanel.java) 
+The [FunctionPanel](https://github.com/javagl/Viewer/blob/master/viewer-functions/src/main/java/de/javagl/viewer/functions/FunctionPanel.java) 
 is a [Viewer](https://github.com/javagl/Viewer) for `DoubleFunction`s. 
 It allows zooming and translating the view, and paints labeled axes
 and legends. 
 
 The basic usage is demonstrated in the 
-[ViewerFunctionsTest](https://github.com/javagl/ViewerFunctions/blob/master/src/test/java/de/javagl/viewer/functions/test/ViewerFunctionsTest.java)
+[ViewerFunctionsTest](https://github.com/javagl/Viewer/blob/master/viewer-functions/src/test/java/de/javagl/viewer/functions/test/ViewerFunctionsTest.java)
 class.
 
 Currently, the function plotter does not allow much configuration,
