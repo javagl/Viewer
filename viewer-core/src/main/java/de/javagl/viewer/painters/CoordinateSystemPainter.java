@@ -30,11 +30,13 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.function.DoubleFunction;
 import java.util.function.IntSupplier;
 
 import de.javagl.geom.AffineTransforms;
@@ -76,22 +78,10 @@ public final class CoordinateSystemPainter implements Painter
     private Color axisColorX = Color.GRAY;
     
     /**
-     * The color of the labels on the x-axis. If this is <code>null</code>, 
-     * then the labels on the x-axis will not be painted.
-     */
-    private Color labelColorX = Color.GRAY;
-    
-    /**
      * The color of the y-axis. If this is <code>null</code>, then the
      * y-axis will not be painted.
      */
     private Color axisColorY = Color.GRAY;
-    
-    /**
-     * The color of the labels on the y-axis. If this is <code>null</code>, 
-     * then the labels on the y-axis will not be painted.
-     */
-    private Color labelColorY = Color.GRAY;
     
     /**
      * The size of the tick marks on the screen
@@ -143,9 +133,16 @@ public final class CoordinateSystemPainter implements Painter
 
     /**
      * The label format for the x-axis. May be <code>null</code>
-     * if no labels should be painted
+     * if the {@link #labelFormatterX} is used.
      */
     private String labelFormatX;
+    
+    /**
+     * The formatter that will receive values for ticks at the x-axis, and
+     * return the corresponding label string. May be <code>null</code> if
+     * the default {@link #labelFormatX} should be used.
+     */
+    private DoubleFunction<String> labelFormatterX;
     
     /**
      * The tick positions of the y-axis, in world coordinates
@@ -154,10 +151,17 @@ public final class CoordinateSystemPainter implements Painter
 
     /**
      * The label format for the y-axis. May be <code>null</code>
-     * if no labels should be painted
+     * if the {@link #labelFormatterY} is used.
      */
     private String labelFormatY;
-        
+
+    /**
+     * The formatter that will receive values for ticks at the y-axis, and
+     * return the corresponding label string. May be <code>null</code> if
+     * the default {@link #labelFormatY} should be used.
+     */
+    private DoubleFunction<String> labelFormatterY;
+    
     /**
      * The bounds of the currently visible area, in world coordinates
      */
@@ -243,9 +247,25 @@ public final class CoordinateSystemPainter implements Painter
     private boolean tickOrientationPositiveX = false;
     
     /**
+     * Whether the y-component of the label painter for the x-axis labels
+     * should be adjusted automatically (to either be 0.0 or 1.0), 
+     * depending on the {@link #tickOrientationPositiveX} flag and
+     * the current y-scaling of the world-to-screen transform 
+     */
+    private boolean adjustLabelAnchorX = false;
+    
+    /**
      * Whether ticks on the y-axis should be oriented along the positive x-axis
      */
     private boolean tickOrientationPositiveY = false;
+
+    /**
+     * Whether the x-component of the label painter for the y-axis labels
+     * should be adjusted automatically (to either be 0.0 or 1.0), 
+     * depending on the {@link #tickOrientationPositiveY} flag and
+     * the current x-scaling of the world-to-screen transform 
+     */
+    private boolean adjustLabelAnchorY = false;
     
     /**
      * The {@link LabelPainter} for the labels on the x-axis
@@ -266,11 +286,61 @@ public final class CoordinateSystemPainter implements Painter
         labelPainterX.setPaint(axisColorX);
         labelPainterX.setTransformingLabels(false);
         labelPainterX.setFont(font);
+        labelPainterX.setLabelAnchor(0.5, 0.0);
         
         labelPainterY = new LabelPainter();
         labelPainterY.setPaint(axisColorY);
         labelPainterY.setTransformingLabels(false);
         labelPainterY.setFont(font);
+        labelPainterY.setLabelAnchor(1.0, 0.5);
+    }
+    
+    /**
+     * Returns the {@link LabelPainter} that is used for painting the labels
+     * along the x-axis
+     * 
+     * @return The {@link LabelPainter}
+     */
+    public LabelPainter getLabelPainterX()
+    {
+        return labelPainterX;
+    }
+    
+    /**
+     * Set the formatter that will receive x-values for ticks, and return
+     * the string that should be painted at this coordinate. This formatter
+     * may be null, in which case a string representation of the x-value
+     * will be painted.
+     * 
+     * @param labelFormatterX The formatter
+     */
+    public void setLabelFormatterX(DoubleFunction<String> labelFormatterX)
+    {
+        this.labelFormatterX = labelFormatterX;
+    }
+    
+    /**
+     * Returns the {@link LabelPainter} that is used for painting the labels
+     * along the y-axis
+     * 
+     * @return The {@link LabelPainter}
+     */
+    public LabelPainter getLabelPainterY()
+    {
+        return labelPainterY;
+    }
+    
+    /**
+     * Set the formatter that will receive y-values for ticks, and return
+     * the string that should be painted at this coordinate. This formatter
+     * may be null, in which case a string representation of the y-value
+     * will be painted.
+     * 
+     * @param labelFormatterY The formatter
+     */
+    public void setLabelFormatterY(DoubleFunction<String> labelFormatterY)
+    {
+        this.labelFormatterY = labelFormatterY;
     }
     
     /**
@@ -344,18 +414,6 @@ public final class CoordinateSystemPainter implements Painter
     public void setAxisColorX(Color axisColorX)
     {
         this.axisColorX = axisColorX;
-    }
-    
-    /**
-     * Set the color of the labels on the x-axis. If this is <code>null</code>, 
-     * then the labels on the x-axis will not be painted. 
-     * 
-     * @param labelColorX The label color
-     */
-    public void setLabelColorX(Color labelColorX)
-    {
-        this.labelColorX = labelColorX;
-        labelPainterX.setPaint(labelColorX);
     }
     
     /**
@@ -433,17 +491,6 @@ public final class CoordinateSystemPainter implements Painter
         this.axisColorY = axisColorY;
     }
     
-    /**
-     * Set the color of the labels on the y-axis. If this is <code>null</code>, 
-     * then the labels on the y-axis will not be painted. 
-     * 
-     * @param labelColorY The label color
-     */
-    public void setLabelColorY(Color labelColorY)
-    {
-        this.labelColorY = labelColorY;
-        labelPainterY.setPaint(labelColorY);
-    }
     
     /**
      * Set the range of the y-axis that should be displayed. If either
@@ -520,12 +567,13 @@ public final class CoordinateSystemPainter implements Painter
     private void updateX(AffineTransform worldToScreen,
         double worldMinX, double worldMaxX)
     {
+        Paint labelPaintX = labelPainterX.getPaint();
         double worldTickDistanceX = fixedWorldTickDistanceX;
         if (!Double.isFinite(worldTickDistanceX))
         {   
             worldTickDistanceX = Axes.computeWorldTickDistanceX(
                 worldToScreen, minScreenTickDistanceX);
-            if (labelColorX != null && adjustForStringLengths)
+            if (labelPaintX != null && adjustForStringLengths)
             {
                 worldTickDistanceX = 
                     Axes.computeAdjustedWorldTickDistanceX(
@@ -536,31 +584,35 @@ public final class CoordinateSystemPainter implements Painter
         
         worldTicksX = Axes.computeWorldTicks(
             worldMinX, worldMaxX, worldTickDistanceX);
-        if (labelColorX != null)
+        if (labelPaintX != null)
         {
             labelFormatX = Axes.formatStringFor(worldTickDistanceX);
         }
-
-        if (tickOrientationPositiveX)
+        
+        if (adjustLabelAnchorX)
         {
-            if (worldToScreen.getScaleY() > 0)
+            Point2D anchor = labelPainterX.getLabelAnchor();
+            if (tickOrientationPositiveX)
             {
-                labelPainterX.setLabelAnchor(0.5, 0.0);
+                if (worldToScreen.getScaleY() > 0)
+                {
+                    labelPainterX.setLabelAnchor(anchor.getX(), 0.0);
+                }
+                else
+                {
+                    labelPainterX.setLabelAnchor(anchor.getX(), 1.0);
+                }
             }
             else
             {
-                labelPainterX.setLabelAnchor(0.5, 1.0);
-            }
-        }
-        else
-        {
-            if (worldToScreen.getScaleY() > 0)
-            {
-                labelPainterX.setLabelAnchor(0.5, 1.0);
-            }
-            else
-            {
-                labelPainterX.setLabelAnchor(0.5, 0.0);
+                if (worldToScreen.getScaleY() > 0)
+                {
+                    labelPainterX.setLabelAnchor(anchor.getX(), 1.0);
+                }
+                else
+                {
+                    labelPainterX.setLabelAnchor(anchor.getX(), 0.0);
+                }
             }
         }
         
@@ -577,6 +629,7 @@ public final class CoordinateSystemPainter implements Painter
     private void updateY(AffineTransform worldToScreen,
         double worldMinY, double worldMaxY)
     {
+        Paint labelPaintY = labelPainterY.getPaint();
         double worldTickDistanceY = fixedWorldTickDistanceY;
         if (!Double.isFinite(worldTickDistanceY))
         {
@@ -586,31 +639,35 @@ public final class CoordinateSystemPainter implements Painter
         }
         worldTicksY = Axes.computeWorldTicks(
             worldMinY, worldMaxY, worldTickDistanceY);
-        if (labelColorY != null)
+        if (labelPaintY != null)
         {
             labelFormatY = Axes.formatStringFor(worldTickDistanceY);
         }
         
-        if (tickOrientationPositiveY)
+        if (adjustLabelAnchorY)
         {
-            if (worldToScreen.getScaleX() > 0)
+            Point2D anchor = labelPainterY.getLabelAnchor();
+            if (tickOrientationPositiveY)
             {
-                labelPainterY.setLabelAnchor(0.0, 0.5);
+                if (worldToScreen.getScaleX() > 0)
+                {
+                    labelPainterY.setLabelAnchor(0.0, anchor.getY());
+                }
+                else
+                {
+                    labelPainterY.setLabelAnchor(1.0, anchor.getY());
+                }
             }
             else
             {
-                labelPainterY.setLabelAnchor(1.0, 0.5);
-            }
-        }
-        else
-        {
-            if (worldToScreen.getScaleX() > 0)
-            {
-                labelPainterY.setLabelAnchor(1.0, 0.5);
-            }
-            else
-            {
-                labelPainterY.setLabelAnchor(0.0, 0.5);
+                if (worldToScreen.getScaleX() > 0)
+                {
+                    labelPainterY.setLabelAnchor(1.0, anchor.getY());
+                }
+                else
+                {
+                    labelPainterY.setLabelAnchor(0.0, anchor.getY());
+                }
             }
         }
     }
@@ -883,7 +940,8 @@ public final class CoordinateSystemPainter implements Painter
         Lines.scaleToLength(length, TEMP_LINE, TEMP_LINE);
         g.draw(TEMP_LINE);
         
-        if (labelColorX != null )
+        Paint labelPaintX = labelPainterX.getPaint();
+        if (labelPaintX != null )
         {
             TEMP_POINT.setLocation(TEMP_LINE.getX2(), TEMP_LINE.getY2());
             Points.inverseTransform(worldToScreen, TEMP_POINT, TEMP_POINT);
@@ -902,7 +960,15 @@ public final class CoordinateSystemPainter implements Painter
     private void paintLabelX(Graphics2D g, AffineTransform worldToScreen, 
         double worldX, double worldY)
     {
-        String string = String.format(labelFormatX, worldX);
+        String string = null;
+        if (labelFormatterX == null)
+        {
+            string = String.format(labelFormatX, worldX);
+        }
+        else
+        {
+            string = labelFormatterX.apply(worldX);
+        }
         labelPainterX.setLabelLocation(worldX, worldY);
         labelPainterX.paint(g, worldToScreen, 0, 0, string);
     }
@@ -928,7 +994,8 @@ public final class CoordinateSystemPainter implements Painter
         Lines.scaleToLength(length, TEMP_LINE, TEMP_LINE);
         g.draw(TEMP_LINE);
         
-        if (labelColorY != null )
+        Paint labelPaintY = labelPainterY.getPaint();
+        if (labelPaintY != null )
         {
             TEMP_POINT.setLocation(TEMP_LINE.getX2(), TEMP_LINE.getY2());
             Points.inverseTransform(worldToScreen, TEMP_POINT, TEMP_POINT);
@@ -947,7 +1014,15 @@ public final class CoordinateSystemPainter implements Painter
     private void paintLabelY(Graphics2D g, AffineTransform worldToScreen, 
         double worldX, double worldY)
     {
-        String string = String.format(labelFormatY, worldY);
+        String string = null;
+        if (labelFormatterY == null)
+        {
+            string = String.format(labelFormatY, worldY);
+        }
+        else
+        {
+            string = labelFormatterY.apply(worldY);
+        }
         labelPainterY.setLabelLocation(worldX, worldY);
         labelPainterY.paint(g, worldToScreen, 0, 0, string);
     }
