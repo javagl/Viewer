@@ -83,12 +83,15 @@ public class LabelPainterTest
         labelObjectPainter.setObject("Test");
         
         viewer.addPainter(labelObjectPainter);
-        viewer.addPainter(new LabelPainterPainter(labelPainter, labelObjectPainter));
+        viewer.addPainter(
+            new LabelPainterPainter(labelPainter, labelObjectPainter));
         
         f.getContentPane().add(viewer, BorderLayout.CENTER);
         
+        JPanel controlPanel = 
+            createControlPanel(viewer, labelPainter, labelObjectPainter);
         f.getContentPane().add(
-            createControlPanel(viewer, labelPainter, labelObjectPainter), BorderLayout.SOUTH);
+            controlPanel, BorderLayout.SOUTH);
 
         viewer.setPreferredSize(new Dimension(500,500));
         viewer.setDisplayedWorldArea(-5,-5,10,10);
