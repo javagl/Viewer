@@ -26,10 +26,13 @@
  */
 package de.javagl.viewer.painters;
 
+import java.awt.Color;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.DoubleFunction;
+
+import de.javagl.viewer.Viewer;
 
 /**
  * Methods related to {@link CoordinateSystemPainter} instances
@@ -127,6 +130,59 @@ public class CoordinateSystemPainters
             return string;
         };
     }
+    
+    /**
+     * Create a coordinate system painter for the given viewer, using a
+     * fixed screen layout, with unspecified margins
+     * 
+     * @param viewer The viewer
+     * @return The painter
+     */
+    static CoordinateSystemPainter createFixed(Viewer viewer)
+    {
+        return createFixed(viewer, 10, 10, 10, 10);
+    }
+    
+    /**
+     * Create a coordinate system painter for the given viewer, using a
+     * fixed screen layout, with the given margins
+     * 
+     * @param viewer The viewer
+     * @param left The left margin
+     * @param right The right margin
+     * @param top The top margin
+     * @param bottom The bottom margin
+     * @return The painter
+     */
+    static CoordinateSystemPainter createFixed(Viewer viewer,
+        int left, int right, int top, int bottom)
+    {
+        CoordinateSystemPainter fixedCoordinateSystemPainter =
+            new CoordinateSystemPainter();
+
+        LabelPainter labelPainterX = 
+            fixedCoordinateSystemPainter.getLabelPainterX();
+        labelPainterX.setPaint(Color.LIGHT_GRAY);
+
+        LabelPainter labelPainterY = 
+            fixedCoordinateSystemPainter.getLabelPainterY();
+        labelPainterY.setPaint(Color.LIGHT_GRAY);
+        
+        fixedCoordinateSystemPainter.setAxisColorX(Color.LIGHT_GRAY);
+        fixedCoordinateSystemPainter.setAxisColorY(Color.LIGHT_GRAY);
+        fixedCoordinateSystemPainter.setGridColorX(null);
+        fixedCoordinateSystemPainter.setGridColorY(null);
+        fixedCoordinateSystemPainter.setScreenAxisLayoutX(
+            () -> left, 
+            () -> viewer.getWidth() - right, 
+            () -> top);
+        fixedCoordinateSystemPainter.setScreenAxisLayoutY(
+            () -> viewer.getHeight() - bottom, 
+            () -> top, 
+            () -> viewer.getWidth() - right);
+        return fixedCoordinateSystemPainter;
+    }
+    
     
     /**
      * Private constructor to prevent instantiation
