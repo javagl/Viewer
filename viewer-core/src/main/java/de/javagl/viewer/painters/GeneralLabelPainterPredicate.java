@@ -260,9 +260,12 @@ public final class GeneralLabelPainterPredicate
     public boolean test(LabelPaintState labelPaintState)
     {
         Rectangle2D bounds = labelPaintState.getLabelBounds();
+        AffineTransform worldToScreen = 
+            labelPaintState.getWorldToScreenTransform();
         
         /*
         {
+            
             double worldWidth = bounds.getWidth();
             double worldHeight = bounds.getHeight();
             AffineTransform labelTransform = 
@@ -271,34 +274,58 @@ public final class GeneralLabelPainterPredicate
                 AffineTransforms.computeDistanceX(labelTransform, worldWidth);
             double screenHeight =
                 AffineTransforms.computeDistanceY(labelTransform, worldHeight);
+            System.out.println("For "+labelPaintState.getLabel());
             System.out.println("worldWidth "+worldWidth);
             System.out.println("worldHeight "+worldHeight);
             System.out.println("screenWidth "+screenWidth);
             System.out.println("screenHeight "+screenHeight);
+            System.out.println("minimumWorldWidth "+minimumWorldWidth);
+            System.out.println("maximumWorldWidth "+maximumWorldWidth);
+            System.out.println("minimumWorldHeight "+minimumWorldHeight);
+            System.out.println("maximumWorldHeight "+maximumWorldHeight);
         }
-        */
+        //*/
         
         
         double worldWidth = bounds.getWidth();
-        if (worldWidth < minimumWorldWidth)
+        if (Double.isFinite(minimumWorldWidth))
         {
-            return false; 
+            double v = AffineTransforms.computeDistanceX(
+                worldToScreen, minimumWorldWidth);
+            if (worldWidth < v)
+            {
+                return false; 
+            }
         }
-        if (worldWidth > maximumWorldWidth)
+        if (Double.isFinite(maximumWorldWidth))
         {
-            return false; 
+            double v = AffineTransforms.computeDistanceX(
+                worldToScreen, maximumWorldWidth);
+            if (worldWidth > v)
+            {
+                return false; 
+            }
         }
 
         double worldHeight = bounds.getHeight();
-        if (worldHeight < minimumWorldHeight)
+        if (Double.isFinite(minimumWorldHeight))
         {
-            return false; 
+            double v = AffineTransforms.computeDistanceX(
+                worldToScreen, minimumWorldHeight);
+            if (worldHeight < v)
+            {
+                return false; 
+            }
         }
-        if (worldHeight > maximumWorldHeight)
+        if (Double.isFinite(maximumWorldHeight))
         {
-            return false; 
+            double v = AffineTransforms.computeDistanceX(
+                worldToScreen, maximumWorldHeight);
+            if (worldHeight > v)
+            {
+                return false; 
+            }
         }
-        
 
         AffineTransform labelTransform = labelPaintState.getLabelTransform();
         double screenWidth =
