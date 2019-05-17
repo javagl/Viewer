@@ -79,27 +79,27 @@ public final class BoxPlotPainter implements ObjectPainter<BoxPlot>
     /**
      * The paint for filling the box
      */
-    private final Paint boxFillPaint = new Color(240,240,240);
+    private Paint boxFillPaint = new Color(240,240,240);
     
     /**
      * The paint for drawing the box
      */
-    private final Paint boxDrawPaint = new Color(100,100,100);
+    private Paint boxDrawPaint = new Color(100,100,100);
     
     /**
      * The paint for the whiskers
      */
-    private final Paint whiskerPaint = new Color(100,100,100);
+    private Paint whiskerPaint = new Color(100,100,100);
     
     /**
      * The paint for the median
      */
-    private final Paint medianPaint = new Color(40,40,40);
+    private Paint medianPaint = new Color(40,40,40);
     
     /**
      * The point for the mean
      */
-    private final Paint meanPaint = new Color(40,40,40);
+    private Paint meanPaint = new Color(40,40,40);
 
     /**
      * The relative width of the box
@@ -124,6 +124,56 @@ public final class BoxPlotPainter implements ObjectPainter<BoxPlot>
         // Default constructor
     }
     
+    /**
+     * Set the paint that will be used for filling the box
+     * 
+     * @param boxFillPaint The paint
+     */
+    public void setBoxFillPaint(Paint boxFillPaint)
+    {
+        this.boxFillPaint = boxFillPaint;
+    }
+
+    /**
+     * Set the paint that will be used for drawing the box
+     * 
+     * @param boxDrawPaint The paint
+     */
+    public void setBoxDrawPaint(Paint boxDrawPaint)
+    {
+        this.boxDrawPaint = boxDrawPaint;
+    }
+
+    /**
+     * Set the paint that will be used for drawing the whisker
+     * 
+     * @param boxFillPaint The paint
+     */
+    public void setWhiskerPaint(Paint whiskerPaint)
+    {
+        this.whiskerPaint = whiskerPaint;
+    }
+
+    /**
+     * Set the paint that will be used for drawing the median line
+     * 
+     * @param boxFillPaint The paint
+     */
+    public void setMedianPaint(Paint medianPaint)
+    {
+        this.medianPaint = medianPaint;
+    }
+
+    /**
+     * Set the paint that will be used for filling the mean dot
+     * 
+     * @param meanPaint The paint
+     */
+    public void setMeanPaint(Paint meanPaint)
+    {
+        this.meanPaint = meanPaint;
+    }
+
     /**
      * Set the width of the box plot
      * 
