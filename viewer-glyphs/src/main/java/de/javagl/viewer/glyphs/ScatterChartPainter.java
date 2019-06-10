@@ -33,6 +33,9 @@ import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 import de.javagl.geom.Lines;
 import de.javagl.viewer.ObjectPainter;
@@ -151,9 +154,8 @@ public final class ScatterChartPainter implements ObjectPainter<ScatterChart>
         }
     }
     
-    
     /**
-     * Paint the lines of the that have a paint and a shape
+     * Paint the points of the chart
      * 
      * @param g The graphics
      * @param worldToScreen The world to screen transform
@@ -164,6 +166,8 @@ public final class ScatterChartPainter implements ObjectPainter<ScatterChart>
     private void paintPoints(Graphics2D g, AffineTransform worldToScreen,
         double w, double h, ScatterChart scatterChart)
     {
+        Map<Shape, Rectangle2D> shapeBounds = 
+            new IdentityHashMap<Shape, Rectangle2D>();
         int n = scatterChart.getNumPoints();
         for (int i=0; i<n; i++)
         {
@@ -177,19 +181,30 @@ public final class ScatterChartPainter implements ObjectPainter<ScatterChart>
             {
                 continue;
             }
+            Rectangle2D shapeBound = 
+                shapeBounds.computeIfAbsent(shape, Shape::getBounds2D);
+            
             double x = scatterChart.getPointX(i);
             double y = scatterChart.getPointY(i);
             
             AffineTransform oldAT = g.getTransform();
             TEMP_POINT.setLocation(x, y);
             worldToScreen.transform(TEMP_POINT, TEMP_POINT);
+            
+            double minX = TEMP_POINT.getX() + shapeBound.getMinX();
+            double minY = TEMP_POINT.getY() + shapeBound.getMinY();
+            double maxX = TEMP_POINT.getX() + shapeBound.getMaxX();
+            double maxY = TEMP_POINT.getY() + shapeBound.getMaxY();
+            if (maxX < 0 || maxY < 0 || minX > w || minY > h)
+            {
+                continue;
+            }
+            
             g.translate(TEMP_POINT.getX(), TEMP_POINT.getY());
             g.setPaint(paint);
             g.draw(shape);
             g.setTransform(oldAT);
         }
     }
-    
-    
-    
 }
+
