@@ -138,7 +138,7 @@ public class CoordinateSystemPainters
      * @param viewer The viewer
      * @return The painter
      */
-    static CoordinateSystemPainter createFixed(Viewer viewer)
+    public static CoordinateSystemPainter createFixed(Viewer viewer)
     {
         return createFixed(viewer, 10, 10, 10, 10);
     }
@@ -154,7 +154,7 @@ public class CoordinateSystemPainters
      * @param bottom The bottom margin
      * @return The painter
      */
-    static CoordinateSystemPainter createFixed(Viewer viewer,
+    public static CoordinateSystemPainter createFixed(Viewer viewer,
         int left, int right, int top, int bottom)
     {
         CoordinateSystemPainter fixedCoordinateSystemPainter =
