@@ -1,5 +1,6 @@
 package de.javagl.viewer.painters.test;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -47,14 +48,16 @@ class LabelPainterPainter implements Painter
             worldToScreen.transform(labelLocation, null);
         drawMarker(g, screenLabelLocation, 3, "Location");
         
+        Font font = labelPainter.getFont();
+        
         if (labelPainter.isTransformingLabels())
         {
             // Compute the bounds of the label with the font of the
             // LabelPainter and the world to screen transform
-            g.setFont(labelPainter.getFont());
+            g.setFont(font);
             Rectangle2D labelBounds = 
                 StringBoundsUtils.computeStringBounds(
-                    labelObjectPainter.getObject(), g.getFont());
+                    labelObjectPainter.getObject(), font);
 
             // Compute the absolute location of the anchor in the screen
             Point2D labelAnchor = labelPainter.getLabelAnchor();
@@ -97,10 +100,10 @@ class LabelPainterPainter implements Painter
         {
             // Compute the bounds of the label with the font of the
             // LabelPainter 
-            g.setFont(labelPainter.getFont());
+            g.setFont(font);
             Rectangle2D labelBounds = 
                 StringBoundsUtils.computeStringBounds(
-                    labelObjectPainter.getObject(), g.getFont());
+                    labelObjectPainter.getObject(), font);
 
             // Compute the absolute location of the anchor in the screen
             Point2D labelAnchor = labelPainter.getLabelAnchor();
@@ -139,6 +142,14 @@ class LabelPainterPainter implements Painter
             at.translate(-absoluteLabelAnchorX, -absoluteLabelAnchorY);
             g.draw(at.createTransformedShape(labelBounds));
         }
+        
+        // For comparison, draw the bounds of the label that are computed
+        // by the painter
+        Shape computedBounds = labelPainter.computeLabelBounds(
+            worldToScreen,  labelObjectPainter.getObject());
+        g.setStroke(new BasicStroke(3.0f));
+        g.setPaint(new Color(0,255,0,64));
+        g.draw(computedBounds);
     }
     
     private static void drawMarker(

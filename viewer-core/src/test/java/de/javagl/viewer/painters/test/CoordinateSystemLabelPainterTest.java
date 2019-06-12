@@ -11,10 +11,10 @@ import java.time.ZoneOffset;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
 
 import de.javagl.viewer.MouseControls;
-import de.javagl.viewer.Painters;
 import de.javagl.viewer.Viewer;
 import de.javagl.viewer.painters.CoordinateSystemPainter;
 import de.javagl.viewer.painters.CoordinateSystemPainters;
@@ -49,6 +49,7 @@ public class CoordinateSystemLabelPainterTest
        
         
         Viewer viewer = new Viewer();
+        viewer.setFlippedVertically(true);
         viewer.setMouseControl(
             MouseControls.createDefault(viewer, false, true));
         
@@ -57,7 +58,7 @@ public class CoordinateSystemLabelPainterTest
         
         LabelPainter labelPainterX = coordinateSystemPainter.getLabelPainterX();
         labelPainterX.setAngle(Math.toRadians(-45.0));
-        labelPainterX.setLabelAnchor(1.0, 0.0);
+        labelPainterX.setLabelAnchor(1.0, 0.5);
         
         Duration unit = Duration.ofMinutes(1);
         OffsetDateTime zero = 
@@ -67,9 +68,17 @@ public class CoordinateSystemLabelPainterTest
             CoordinateSystemPainters.createDateLabelFormatter(
                 zero, unit, pattern));
         
-        viewer.addPainter(
-            Painters.createFlippedVertically(coordinateSystemPainter));
+        viewer.addPainter(coordinateSystemPainter);
         f.getContentPane().add(viewer, BorderLayout.CENTER);
+        
+        JSlider angleSliderX = new JSlider(0,  90);
+        angleSliderX.addChangeListener(e -> 
+        {
+            int angleDeg = angleSliderX.getValue();
+            labelPainterX.setAngle(Math.toRadians(-angleDeg));
+            viewer.repaint();
+        });
+        f.getContentPane().add(angleSliderX, BorderLayout.SOUTH);
 
         LabelPainter labelPainterY = coordinateSystemPainter.getLabelPainterY();
         labelPainterY.setAngle(Math.toRadians(45.0));

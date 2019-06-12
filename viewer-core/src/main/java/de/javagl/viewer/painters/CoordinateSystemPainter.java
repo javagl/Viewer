@@ -31,8 +31,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -60,11 +62,6 @@ public final class CoordinateSystemPainter implements Painter
      * A point object, used internally in various methods
      */
     private static final Point2D.Double TEMP_POINT = new Point2D.Double();
-    
-    /**
-     * The font that will be used for the labels
-     */
-    private final Font font = new Font("Dialog", Font.PLAIN, 9);
     
     /**
      * The stroke for the axes
@@ -282,6 +279,8 @@ public final class CoordinateSystemPainter implements Painter
      */
     public CoordinateSystemPainter()
     {
+        Font font = new Font("Dialog", Font.PLAIN, 9);
+        
         labelPainterX = new LabelPainter();
         labelPainterX.setPaint(axisColorX);
         labelPainterX.setTransformingLabels(false);
@@ -575,10 +574,12 @@ public final class CoordinateSystemPainter implements Painter
                 worldToScreen, minScreenTickDistanceX);
             if (labelPaintX != null && adjustForStringLengths)
             {
-                worldTickDistanceX = 
-                    Axes.computeAdjustedWorldTickDistanceX(
-                        font, worldToScreen, worldMinX, worldMaxX, 
-                        worldTickDistanceX, minScreenTickDistanceX);
+                double adjusted = computeAdjustedWorldTickDistanceX(
+                    worldToScreen, worldMinX);
+                if (adjusted > 0)
+                {
+                    worldTickDistanceX = adjusted;
+                }
             }
         }
         
@@ -615,7 +616,51 @@ public final class CoordinateSystemPainter implements Painter
                 }
             }
         }
+    }
+    
+    /**
+     * Compute the distance between ticks on the x-axis, in world coordinates,
+     * that is necessary so that the labels can be painted with the current
+     * label painter
+     * 
+     * @param worldToScreen The world to screen transform
+     * @param x A value on the x-axis that should be displayed
+     * @return The adjusted distance, or 0.0 if no matching distance
+     * could be computed (which should never be the case)
+     */
+    private double computeAdjustedWorldTickDistanceX(
+        AffineTransform worldToScreen, double x)
+    {
+        String labelString = " " + createLabelStringX(x) + " ";
+        labelPainterX.setLabelLocation(0, 0);
+        Shape labelBounds = labelPainterX.computeLabelBounds(
+            worldToScreen, labelString);
         
+        // Note: This is not very efficient. The solution could probably be 
+        // computed analytically. But considering the possible label texts,
+        // fonts, and anchor settings, this is the most pragmatic solution:
+        int max = labelBounds.getBounds().width;
+        for (int i = 1; i < max; i++)
+        {
+            double candidate =
+                Axes.computeWorldTickDistanceX(worldToScreen, i);
+
+            labelPainterX.setLabelLocation(0, 0);
+            Shape bounds0 = labelPainterX.computeLabelBounds(
+                worldToScreen, labelString);
+            labelPainterX.setLabelLocation(candidate, 0);
+            Shape bounds1 = labelPainterX.computeLabelBounds(
+                worldToScreen, labelString);
+
+            Area a0 = new Area(bounds0);
+            Area a1 = new Area(bounds1);
+            a0.intersect(a1);
+            if (a0.isEmpty())
+            {
+                return candidate;
+            }
+        }
+        return 0.0;
     }
 
     /**
@@ -960,17 +1005,24 @@ public final class CoordinateSystemPainter implements Painter
     private void paintLabelX(Graphics2D g, AffineTransform worldToScreen, 
         double worldX, double worldY)
     {
-        String string = null;
-        if (labelFormatterX == null)
-        {
-            string = String.format(labelFormatX, worldX);
-        }
-        else
-        {
-            string = labelFormatterX.apply(worldX);
-        }
+        String string = createLabelStringX(worldX);
         labelPainterX.setLabelLocation(worldX, worldY);
         labelPainterX.paint(g, worldToScreen, 0, 0, string);
+    }
+    
+    /**
+     * Create the string for a label at the x-axis at the given position
+     * 
+     * @param worldX The world coordinate
+     * @return The string
+     */
+    private String createLabelStringX(double worldX)
+    {
+        if (labelFormatterX == null)
+        {
+            return String.format(labelFormatX, worldX);
+        }
+        return labelFormatterX.apply(worldX);
     }
     
     /**
@@ -1014,17 +1066,24 @@ public final class CoordinateSystemPainter implements Painter
     private void paintLabelY(Graphics2D g, AffineTransform worldToScreen, 
         double worldX, double worldY)
     {
-        String string = null;
-        if (labelFormatterY == null)
-        {
-            string = String.format(labelFormatY, worldY);
-        }
-        else
-        {
-            string = labelFormatterY.apply(worldY);
-        }
+        String string = createLabelStringY(worldY);
         labelPainterY.setLabelLocation(worldX, worldY);
         labelPainterY.paint(g, worldToScreen, 0, 0, string);
+    }
+    
+    /**
+     * Create the string for a label at the y-axis at the given position
+     * 
+     * @param worldY The world coordinate
+     * @return The string
+     */
+    private String createLabelStringY(double worldY)
+    {
+        if (labelFormatterY == null)
+        {
+            return String.format(labelFormatY, worldY);
+        }
+        return labelFormatterY.apply(worldY);
     }
     
     

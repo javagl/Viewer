@@ -29,6 +29,7 @@ package de.javagl.viewer.painters;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -49,6 +50,12 @@ public final class LabelPainter implements ObjectPainter<String>
      */
     private static final AffineTransform TEMP_AFFINE_TRANSFORM =
         new AffineTransform();
+    
+    /**
+     * Temporary rectangle, used internally
+     */
+    private static final Rectangle2D TEMP_RECTANGLE =
+        new Rectangle2D.Double();
     
     /**
      * A class describing the state of a label that is about to be
@@ -463,111 +470,109 @@ public final class LabelPainter implements ObjectPainter<String>
         }
         g.setFont(font);
         g.setPaint(paint);
-        if (transformingLabels)
-        {
-            drawStringTransformed(g, worldToScreen, label);
-        }
-        else
-        {
-            drawStringFixed(g, worldToScreen, label);
-        }
-    }
-    
-    /**
-     * Draw the given string into the given graphics, transformed with
-     * the given world-to-screen transform.
-     * 
-     * @param g The Graphics used for painting 
-     * @param worldToScreen The world-to-screen transform
-     * @param string The string to paint
-     */
-    private void drawStringTransformed(Graphics2D g, 
-        AffineTransform worldToScreen, String string)
-    {
-        Rectangle2D labelBounds = 
-            StringBoundsUtils.computeStringBounds(string, g.getFont());
-
-        double absoluteLabelAnchorX = 
-            computeAbsoluteX(labelBounds, labelAnchor);
-        double absoluteLabelAnchorY = 
-            computeAbsoluteY(labelBounds, labelAnchor);
         
-        TEMP_AFFINE_TRANSFORM.setTransform(worldToScreen);
-        TEMP_AFFINE_TRANSFORM.translate(
-            labelLocation.getX(), labelLocation.getY());
+        initLabelTransform(worldToScreen, TEMP_AFFINE_TRANSFORM);
+        StringBoundsUtils.computeStringBounds(label, font, TEMP_RECTANGLE);
+        
         TEMP_AFFINE_TRANSFORM.rotate(angleRad);
+        
+        double absoluteLabelAnchorX = 
+            computeAbsoluteX(TEMP_RECTANGLE, labelAnchor);
+        double absoluteLabelAnchorY = 
+            computeAbsoluteY(TEMP_RECTANGLE, labelAnchor);
         TEMP_AFFINE_TRANSFORM.translate(
             -absoluteLabelAnchorX, -absoluteLabelAnchorY);
         
-        if (labelPaintingCondition != null)
+        if (!shouldPaint(worldToScreen, 
+            TEMP_AFFINE_TRANSFORM, label, TEMP_RECTANGLE))
         {
-            labelPaintState.setLabel(string);
-            labelPaintState.setLabelBounds(labelBounds);
-            labelPaintState.setLabelTransform(TEMP_AFFINE_TRANSFORM);
-            labelPaintState.setWorldToScreenTransform(worldToScreen);
-            boolean shouldPaint = labelPaintingCondition.test(labelPaintState);
-            if (!shouldPaint)
-            {
-                return;
-            }
+            return;
         }
         
         AffineTransform oldAt = g.getTransform();
         g.transform(TEMP_AFFINE_TRANSFORM);
-        g.drawString(string, 0, 0);
+        g.drawString(label, 0, 0);
         g.setTransform(oldAt);
     }
     
-    
     /**
-     * Draw the given string into the given graphics. This will draw
-     * the string without transforming it with the world-to-screen
-     * transform.
-     * 
-     * @param g The Graphics used for painting 
+     * Compute the bounds of the label when it is painted with this painter
+     *  
      * @param worldToScreen The world-to-screen transform
-     * @param string The string to paint
+     * @param label The label
+     * @return The label bounds
      */
-    private void drawStringFixed(Graphics2D g, 
-        AffineTransform worldToScreen, String string)
+    public Shape computeLabelBounds(
+        AffineTransform worldToScreen, String label)
     {
-        Rectangle2D labelBounds = 
-            StringBoundsUtils.computeStringBounds(string, g.getFont());
-
-        double labelLocationScreenX = 
-            AffineTransforms.computeX(worldToScreen, labelLocation);
-        double labelLocationScreenY = 
-            AffineTransforms.computeY(worldToScreen, labelLocation);
-        double absoluteLabelAnchorX = 
-            computeAbsoluteX(labelBounds, labelAnchor);
-        double absoluteLabelAnchorY = 
-            computeAbsoluteY(labelBounds, labelAnchor);
-
-        TEMP_AFFINE_TRANSFORM.setToTranslation(
-            labelLocationScreenX, labelLocationScreenY);
+        initLabelTransform(worldToScreen, TEMP_AFFINE_TRANSFORM);
+        StringBoundsUtils.computeStringBounds(label, font, TEMP_RECTANGLE);
+        
         TEMP_AFFINE_TRANSFORM.rotate(angleRad);
+        
+        double absoluteLabelAnchorX = 
+            computeAbsoluteX(TEMP_RECTANGLE, labelAnchor);
+        double absoluteLabelAnchorY = 
+            computeAbsoluteY(TEMP_RECTANGLE, labelAnchor);
         TEMP_AFFINE_TRANSFORM.translate(
             -absoluteLabelAnchorX, -absoluteLabelAnchorY);
         
-        if (labelPaintingCondition != null)
+        return AffineTransforms.createTransformedShape(
+            TEMP_AFFINE_TRANSFORM, TEMP_RECTANGLE);
+    }
+    
+    /**
+     * Initialize the given label transform, based on the given world-to-screen
+     * transform, depending on whether this painter is transforming the labels.
+     * 
+     * @param worldToScreen The world-to-screen transform
+     * @param labelTransform The label transform
+     */
+    private void initLabelTransform(
+        AffineTransform worldToScreen, AffineTransform labelTransform)
+    {
+        if (transformingLabels)
         {
-            labelPaintState.setLabel(string);
-            labelPaintState.setLabelBounds(labelBounds);
-            labelPaintState.setLabelTransform(TEMP_AFFINE_TRANSFORM);
-            labelPaintState.setWorldToScreenTransform(worldToScreen);
-            boolean shouldPaint = labelPaintingCondition.test(labelPaintState);
-            if (!shouldPaint)
-            {
-                return;
-            }
+            labelTransform.setTransform(worldToScreen);
+            labelTransform.translate(
+                labelLocation.getX(), labelLocation.getY());
         }
-
-        AffineTransform oldAT = g.getTransform();
-        g.transform(TEMP_AFFINE_TRANSFORM);
-        g.drawString(string, 0, 0);
-        g.setTransform(oldAT);
+        else
+        {
+            double labelLocationScreenX = 
+                AffineTransforms.computeX(worldToScreen, labelLocation);
+            double labelLocationScreenY = 
+                AffineTransforms.computeY(worldToScreen, labelLocation);
+            labelTransform.setToTranslation(
+                labelLocationScreenX, labelLocationScreenY);
+        }
+    }
+    
+    /**
+     * Returns whether painting the label should be painted, based on the
+     * {@link #labelPaintingCondition}
+     * 
+     * @param worldToScreen The world-to-screen transform
+     * @param labelTransform The label transform
+     * @param label The string
+     * @param labelBounds The label bounds
+     * @return Whether painting should be skipped
+     */
+    private boolean shouldPaint(AffineTransform worldToScreen, 
+        AffineTransform labelTransform, String label, Rectangle2D labelBounds)
+    {
+        if (labelPaintingCondition == null)
+        {
+            return true;
+        }
+        labelPaintState.setWorldToScreenTransform(worldToScreen);
+        labelPaintState.setLabelTransform(labelTransform);
+        labelPaintState.setLabel(label);
+        labelPaintState.setLabelBounds(labelBounds);
+        return labelPaintingCondition.test(labelPaintState);
     }
  
+    
     /**
      * Compute the absolute x-coordinate of the point that defines relative
      * coordinates in the given rectangle

@@ -26,9 +26,7 @@
  */
 package de.javagl.viewer.painters;
 
-import java.awt.Font;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Rectangle2D;
 
 import de.javagl.geom.AffineTransforms;
 
@@ -198,48 +196,6 @@ class Axes
             minScreenTickDistanceX / unitLengthScreenX;
         double worldTickDistanceX =
             computeSnappedUpValue(minWorldTickDistanceX);
-        return worldTickDistanceX;
-    }
-
-    /**
-     * Computes the distance that two ticks on the x-axis should have
-     * in world coordinates, adjusted to make sure that the distance
-     * between the ticks in screen coordinates will be larger than
-     * the bounds of a tick label.
-     * 
-     * @param font The font that will used for the labels
-     * @param worldToScreen The world-to-screen transform
-     * @param worldMinX The minimum value for the x-axis 
-     * @param worldMaxX The maximum value for the x-axis
-     * @param worldTickDistanceX The (non-adjusted) world tick distance 
-     * @param minScreenTickDistanceX  The minimum distance of two ticks
-     * in screen coordinates
-     * @return The adjusted tick distance in world coordinates
-     */
-    static double computeAdjustedWorldTickDistanceX(
-        Font font, AffineTransform worldToScreen, 
-        double worldMinX, double worldMaxX,
-        double worldTickDistanceX, double minScreenTickDistanceX)
-    {
-        String labelFormatX = formatStringFor(worldTickDistanceX);
-    
-        int nMin = (int) (worldMinX / worldTickDistanceX);
-        int nMax = (int) (worldMaxX / worldTickDistanceX) + 1;
-        double worldMinTickX = nMin * worldTickDistanceX;
-        double worldMaxTickX = nMax * worldTickDistanceX;
-    
-        String stringMin = String.format(labelFormatX, worldMinTickX);
-        Rectangle2D bMin = 
-            StringBoundsUtils.computeStringBounds(stringMin, font);
-        String stringMax = String.format(labelFormatX, worldMaxTickX);
-        Rectangle2D bMax = 
-            StringBoundsUtils.computeStringBounds(stringMax, font);
-        double maxStringWidth =
-            Math.max(bMin.getWidth(), bMax.getWidth()) * 1.05;
-        if (maxStringWidth > minScreenTickDistanceX)
-        {
-            return computeWorldTickDistanceX(worldToScreen, maxStringWidth);
-        }
         return worldTickDistanceX;
     }
 
