@@ -572,10 +572,11 @@ public final class CoordinateSystemPainter implements Painter
         {   
             worldTickDistanceX = Axes.computeWorldTickDistanceX(
                 worldToScreen, minScreenTickDistanceX);
+            labelFormatX = Axes.formatStringFor(worldTickDistanceX);
             if (labelPaintX != null && adjustForStringLengths)
             {
                 double adjusted = computeAdjustedWorldTickDistanceX(
-                    worldToScreen, worldMinX);
+                    worldToScreen, worldMinX, worldMaxX);
                 if (adjusted > 0)
                 {
                     worldTickDistanceX = adjusted;
@@ -624,14 +625,25 @@ public final class CoordinateSystemPainter implements Painter
      * label painter
      * 
      * @param worldToScreen The world to screen transform
-     * @param x A value on the x-axis that should be displayed
+     * @param worldMinX The minimum x-coordinate
+     * @param worldMaxX The maximum x-coordinate
      * @return The adjusted distance, or 0.0 if no matching distance
      * could be computed (which should never be the case)
      */
     private double computeAdjustedWorldTickDistanceX(
-        AffineTransform worldToScreen, double x)
+        AffineTransform worldToScreen, double worldMinX, double worldMaxX)
     {
-        String labelString = " " + createLabelStringX(x) + " ";
+        String labelString0 = createLabelStringX(worldMinX);
+        String labelString1 = createLabelStringX(worldMaxX);
+        String labelString;
+        if (labelString0.length() > labelString1.length())
+        {
+            labelString = " " + labelString0 + " ";
+        }
+        else
+        {
+            labelString = " " + labelString1 + " ";
+        }
         labelPainterX.setLabelLocation(0, 0);
         Shape labelBounds = labelPainterX.computeLabelBounds(
             worldToScreen, labelString);
