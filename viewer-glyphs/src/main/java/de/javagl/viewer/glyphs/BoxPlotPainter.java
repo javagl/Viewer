@@ -147,7 +147,7 @@ public final class BoxPlotPainter implements ObjectPainter<BoxPlot>
     /**
      * Set the paint that will be used for drawing the whisker
      * 
-     * @param boxFillPaint The paint
+     * @param whiskerPaint The paint
      */
     public void setWhiskerPaint(Paint whiskerPaint)
     {
@@ -157,7 +157,7 @@ public final class BoxPlotPainter implements ObjectPainter<BoxPlot>
     /**
      * Set the paint that will be used for drawing the median line
      * 
-     * @param boxFillPaint The paint
+     * @param medianPaint The paint
      */
     public void setMedianPaint(Paint medianPaint)
     {

@@ -1,3 +1,8 @@
+/*
+ * www.javagl.de - Viewer - Glyphs
+ *
+ * Copyright (c) 2013-2015 Marco Hutter - http://www.javagl.de
+ */
 package de.javagl.viewer.glyphs.test;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -17,7 +22,8 @@ import de.javagl.viewer.glyphs.BoxPlots;
 import de.javagl.viewer.glyphs.GridLayoutPainter;
  
 /**
- * Simple integration test for the {@link MultiBoxPlotPainter}
+ * Simple integration test for multiple {@link BoxPlotPainter} instances
+ * arranged in a grid layout
  */
 public class MultiBoxPlotPainterTest
 {

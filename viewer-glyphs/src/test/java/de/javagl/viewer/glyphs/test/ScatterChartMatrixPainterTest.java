@@ -144,6 +144,11 @@ public class ScatterChartMatrixPainterTest
         f.setVisible(true);
     }
     
+    /**
+     * Create unspecified data for this test
+     * 
+     * @return The data
+     */
     private static Object[][] createData()
     {
         Object data[][] = 
@@ -302,6 +307,11 @@ public class ScatterChartMatrixPainterTest
         return data;
     }
     
+    /**
+     * Create unspecified headers for this test
+     * 
+     * @return The headers
+     */
     private static Object[] createHeaders()
     {
         Object headers[] = 
