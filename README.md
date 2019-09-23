@@ -12,29 +12,35 @@ Java Swing viewers
     <dependency>
         <groupId>de.javagl</groupId>
         <artifactId>viewer-core</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.2</version>
     </dependency>
 
     <dependency>
         <groupId>de.javagl</groupId>
         <artifactId>viewer-functions</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.2</version>
     </dependency>
 
     <dependency>
         <groupId>de.javagl</groupId>
         <artifactId>viewer-cells</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.2</version>
     </dependency>
 
     <dependency>
         <groupId>de.javagl</groupId>
         <artifactId>viewer-glyphs</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.2</version>
     </dependency>
 
 
 # Changes
+
+0.1.2 :
+  * Added `LinkedMouseControls`
+  * Generalized `BoxPlotPainter`
+  * Internal fixes for coordinate label painters
+  * Added painters for fixed coordinate systems
 
 0.1.1 :
   * Updates in `viewer-core` and `viewer-glyphs` 
