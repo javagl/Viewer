@@ -40,6 +40,8 @@ public class InputEventPredicates
     /**
      * Returns a predicate that is always false
      * 
+     * @param <T> The argument type 
+     * 
      * @return The predicate
      */
     public static <T> Predicate<T> alwaysFalse()
@@ -49,6 +51,8 @@ public class InputEventPredicates
     
     /**
      * Returns a predicate that is always true
+     * 
+     * @param <T> The argument type 
      * 
      * @return The predicate
      */
@@ -60,6 +64,8 @@ public class InputEventPredicates
     /**
      * Returns a predicate that checks whether the given input event
      * is a MOUSE_PRESSED event
+     * 
+     * @param <T> The argument type 
      * 
      * @return The predicate
      */
@@ -73,6 +79,8 @@ public class InputEventPredicates
      * Returns a predicate that checks whether the given input event
      * is a MOUSE_RELEASED event
      * 
+     * @param <T> The argument type 
+     * 
      * @return The predicate
      */
     public static <T extends InputEvent> Predicate<T> mouseReleased()
@@ -84,6 +92,8 @@ public class InputEventPredicates
     /**
      * Returns a predicate that checks whether the given input event
      * is a MOUSE_CLICKED event
+     * 
+     * @param <T> The argument type 
      * 
      * @return The predicate
      */
@@ -97,6 +107,8 @@ public class InputEventPredicates
      * Returns a predicate that checks whether the given input event
      * is a MOUSE_MOVED event
      * 
+     * @param <T> The argument type 
+     * 
      * @return The predicate
      */
     public static <T extends InputEvent> Predicate<T> mouseMoved()
@@ -108,6 +120,8 @@ public class InputEventPredicates
     /**
      * Returns a predicate that checks whether the given input event
      * is a MOUSE_DRAGGED event
+     * 
+     * @param <T> The argument type 
      * 
      * @return The predicate
      */
@@ -121,6 +135,8 @@ public class InputEventPredicates
      * Returns a predicate that checks whether the given input event
      * is a MOUSE_WHEEL event
      * 
+     * @param <T> The argument type 
+     * 
      * @return The predicate
      */
     public static <T extends InputEvent> Predicate<T> mouseWheel()
@@ -132,6 +148,8 @@ public class InputEventPredicates
     /**
      * Returns a predicate that checks whether the given input event
      * was created while the SHIFT button was pressed
+     * 
+     * @param <T> The argument type 
      * 
      * @return The predicate
      */
@@ -145,6 +163,8 @@ public class InputEventPredicates
      * Returns a predicate that checks whether the given input event
      * was created while the ALT button was pressed
      * 
+     * @param <T> The argument type 
+     * 
      * @return The predicate
      */
     public static <T extends InputEvent> Predicate<T> altDown()
@@ -156,6 +176,8 @@ public class InputEventPredicates
     /**
      * Returns a predicate that checks whether the given input event
      * was created while the ALT_GRAPH button was pressed
+     * 
+     * @param <T> The argument type 
      * 
      * @return The predicate
      */
@@ -169,6 +191,8 @@ public class InputEventPredicates
      * Returns a predicate that checks whether the given input event
      * was created while the CONTROL button was pressed
      * 
+     * @param <T> The argument type 
+     * 
      * @return The predicate
      */
     public static <T extends InputEvent> Predicate<T> controlDown()
@@ -180,6 +204,8 @@ public class InputEventPredicates
     /**
      * Returns a predicate that checks whether the given input event
      * was created while the META button was pressed
+     * 
+     * @param <T> The argument type 
      * 
      * @return The predicate
      */
@@ -193,6 +219,8 @@ public class InputEventPredicates
      * Returns a predicate that checks whether the given mouse event
      * is a popup trigger
      * 
+     * @param <T> The argument type 
+     * 
      * @return The predicate
      */
     public static <T extends MouseEvent> Predicate<T> popupTrigger()
@@ -204,6 +232,8 @@ public class InputEventPredicates
     /**
      * Returns a predicate that checks whether the given input event
      * was created while the respective mouse button was pressed
+     * 
+     * @param <T> The argument type 
      * 
      * @param button The button
      * @return The predicate
@@ -242,6 +272,8 @@ public class InputEventPredicates
      * was created without any modifier key pressed. This means that
      * the event was created without SHIFT, ALT, ALT-GR, CTRL key 
      * being pressed.
+     * 
+     * @param <T> The argument type 
      * 
      * @return The predicate
      */
