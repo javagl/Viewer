@@ -70,7 +70,7 @@ public class ScatterChartPainterPerformanceTest
         }
 
         ScatterChart scatterChart = ScatterCharts.create(
-            points, Color.BLUE, TickShapes.square(2));
+            points, Color.BLUE, null, null, TickShapes.square(2));
 
         Viewer viewer = new Viewer();
         viewer.setFlippedVertically(true);
@@ -87,7 +87,7 @@ public class ScatterChartPainterPerformanceTest
 
         ScatterChartPainter scatterChartPainter = new ScatterChartPainter();
         //scatterChartPainter.setLinePaint(Color.BLACK);
-        scatterChartPainter.setLineStroke(new BasicStroke(1.0f));
+        //scatterChartPainter.setLineStroke(new BasicStroke(1.0f));
         
         viewer.addPainter(Painters.create(scatterChartPainter, scatterChart));
         viewer.setDisplayedWorldArea(-3, -3, 6, 6);

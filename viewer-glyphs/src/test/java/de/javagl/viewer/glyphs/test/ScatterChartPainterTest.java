@@ -68,8 +68,9 @@ public class ScatterChartPainterTest
             new Point2D.Double(0.0, 1.0)
         );
 
-        ScatterChart scatterChart = ScatterCharts.create(
-            points, Color.BLUE, TickShapes.square(2));
+        ScatterChart scatterChart = ScatterCharts.create(points, 
+            Color.GREEN, Color.BLUE, 
+            new BasicStroke(3.0f), TickShapes.square(8));
 
         Viewer viewer = new Viewer();
         viewer.setFlippedVertically(true);
@@ -85,7 +86,8 @@ public class ScatterChartPainterTest
                 new Color(210,210,210));
         viewer.addPainter(
             Painters.createTransformed(backgroundPainter, 
-                AffineTransforms.getScaleInstance(minX, minY, maxX, maxY, null)));
+                AffineTransforms.getScaleInstance(
+                    minX, minY, maxX, maxY, null)));
         
         CoordinateSystemPainter coordinateSystemPainter = 
             new CoordinateSystemPainter();
@@ -99,7 +101,7 @@ public class ScatterChartPainterTest
 
         ScatterChartPainter scatterChartPainter = new ScatterChartPainter();
         //scatterChartPainter.setLinePaint(Color.BLACK);
-        scatterChartPainter.setLineStroke(new BasicStroke(1.0f));
+        //scatterChartPainter.setLineStroke(new BasicStroke(1.0f));
         
         viewer.addPainter(Painters.create(scatterChartPainter, scatterChart));
         viewer.setDisplayedWorldArea(-3, -3, 6, 6);

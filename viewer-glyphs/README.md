@@ -6,8 +6,9 @@ Classes for painting glyphs.
 
 # Changes
 
-0.X.X: 
-  * ...
+0.1.3-SNAPSHOT: 
+  * Breaking change: The `ScatterChart` class now offers dedicated 
+    paints and a stroke for filling and drawing the points 
 
 0.1.1:
   * Added coordinate systems to `ScatterChartMatrixPainter`

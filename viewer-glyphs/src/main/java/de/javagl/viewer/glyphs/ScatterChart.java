@@ -28,6 +28,7 @@ package de.javagl.viewer.glyphs;
 
 import java.awt.Paint;
 import java.awt.Shape;
+import java.awt.Stroke;
 
 
 /**
@@ -74,14 +75,37 @@ public interface ScatterChart
     Shape getShape(int index);
     
     /**
-     * Returns the paint that should be used for the specified point.
-     * If this is <code>null</code>, then no shape will be painted.
+     * Returns the paint that should be used for filling the specified point.
+     * If this is <code>null</code>, then the shape will not be filled.
      *  
      * @param index The index of the point
      * @return The paint for the point
      * @throws IndexOutOfBoundsException May be thrown if the index is 
      * smaller than 0 or not smaller than {@link #getNumPoints()}
      */
-    Paint getPaint(int index);
+    Paint getFillPaint(int index);
+
+    /**
+     * Returns the paint that should be used for drawing the specified point.
+     * If this is <code>null</code>, then no shape outline will be painted.
+     *  
+     * @param index The index of the point
+     * @return The paint for the point
+     * @throws IndexOutOfBoundsException May be thrown if the index is 
+     * smaller than 0 or not smaller than {@link #getNumPoints()}
+     */
+    Paint getDrawPaint(int index);
+    
+    /**
+     * Returns the stroke that should be used for drawing the specified point.
+     * If this is <code>null</code>, then no shape outline will be painted.
+     *  
+     * @param index The index of the point
+     * @return The stroke for the point
+     * @throws IndexOutOfBoundsException May be thrown if the index is 
+     * smaller than 0 or not smaller than {@link #getNumPoints()}
+     */
+    Stroke getDrawStroke(int index);
+    
     
 }

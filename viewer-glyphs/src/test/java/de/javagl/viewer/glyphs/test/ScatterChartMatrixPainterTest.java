@@ -9,6 +9,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
+import java.awt.Stroke;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -99,7 +100,7 @@ public class ScatterChartMatrixPainterTest
                     }
                     
                     @Override
-                    public Paint getPaint(int index)
+                    public Paint getFillPaint(int index)
                     {
                         String species = String.valueOf(data[index][4]);
                         if (species.equals("Iris setosa"))
@@ -115,6 +116,18 @@ public class ScatterChartMatrixPainterTest
                             return Color.BLUE;
                         }
                         return Color.MAGENTA;
+                    }
+                    
+                    @Override
+                    public Paint getDrawPaint(int index)
+                    {
+                        return null;
+                    }
+                    
+                    @Override
+                    public Stroke getDrawStroke(int index)
+                    {
+                        return null;
                     }
                     
                     @Override

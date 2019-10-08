@@ -83,6 +83,9 @@ public final class ScatterChartPainter implements ObjectPainter<ScatterChart>
      * will be painted.
      * 
      * @param linePaint The paint
+     * 
+     * @deprecated A scatter chart should not draw lines. 
+     * Should there be be a dedicated "ConnectedScatterChart" class? 
      */
     public void setLinePaint(Paint linePaint)
     {
@@ -95,6 +98,9 @@ public final class ScatterChartPainter implements ObjectPainter<ScatterChart>
      * will be painted.
      * 
      * @param lineStroke The stroke
+     * 
+     * @deprecated A scatter chart should not draw lines. 
+     * Should there be be a dedicated "ConnectedScatterChart" class? 
      */
     public void setLineStroke(Stroke lineStroke)
     {
@@ -171,8 +177,9 @@ public final class ScatterChartPainter implements ObjectPainter<ScatterChart>
         int n = scatterChart.getNumPoints();
         for (int i=0; i<n; i++)
         {
-            Paint paint = scatterChart.getPaint(i);
-            if (paint == null)
+            Paint drawPaint = scatterChart.getDrawPaint(i);
+            Paint fillPaint = scatterChart.getFillPaint(i);
+            if (drawPaint == null && fillPaint == null)
             {
                 continue;
             }
@@ -201,8 +208,21 @@ public final class ScatterChartPainter implements ObjectPainter<ScatterChart>
             }
             
             g.translate(TEMP_POINT.getX(), TEMP_POINT.getY());
-            g.setPaint(paint);
-            g.draw(shape);
+            if (fillPaint != null)
+            {
+                g.setPaint(fillPaint);
+                g.fill(shape);
+            }
+            if (drawPaint != null)
+            {
+                Stroke drawStroke = scatterChart.getDrawStroke(i);
+                if (drawStroke != null)
+                {
+                    g.setStroke(drawStroke);
+                    g.setPaint(drawPaint);
+                    g.draw(shape);
+                }
+            }
             g.setTransform(oldAT);
         }
     }

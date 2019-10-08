@@ -28,10 +28,12 @@ package de.javagl.viewer.glyphs;
 
 import java.awt.Paint;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.IntToDoubleFunction;
 
 /**
  * Methods to create {@link ScatterChart} instances
@@ -44,49 +46,27 @@ public class ScatterCharts
      * chart.
      * 
      * @param points The list of points
-     * @param paint The paint for the points. If this is <code>null</code>,
-     * then no points will be painted.
+     * @param fillPaint The paint for filling the points. If this is 
+     * <code>null</code> then no points will be filled.
+     * @param drawPaint The paint for drawing the point outlines. If this is 
+     * <code>null</code> then no point outlines will be drawn.
+     * @param drawStroke The stroke that will be used for drawing the point
+     * outlines. If this is <code>null</code>, then no outlines will be drawn
      * @param shape The shape for the points. If this is <code>null</code>,
      * then no points will be painted.
      * @return The {@link ScatterChart}
      * @throws NullPointerException If the given list is <code>null</code>
      */
     public static ScatterChart create(
-        List<? extends Point2D> points, Paint paint, Shape shape)
+        List<? extends Point2D> points, 
+        Paint fillPaint, Paint drawPaint, Stroke drawStroke, Shape shape)
     {
         Objects.requireNonNull(points, "The points are null");
-        return new ScatterChart()
-        {
-            @Override
-            public int getNumPoints()
-            {
-                return points.size();
-            }
-
-            @Override
-            public double getPointX(int index)
-            {
-                return points.get(index).getX();
-            }
-
-            @Override
-            public double getPointY(int index)
-            {
-                return points.get(index).getY();
-            }
-            
-            @Override
-            public Paint getPaint(int index)
-            {
-                return paint;
-            }
-            
-            @Override
-            public Shape getShape(int index)
-            {
-                return shape;
-            }
-        };
+        return create(
+            points.size(),
+            index -> points.get(index).getX(),
+            index -> points.get(index).getY(),
+            fillPaint, drawPaint, drawStroke, shape);
     }
     
     /**
@@ -97,8 +77,12 @@ public class ScatterCharts
      * 
      * @param xCoordinates The list of x-coordinates 
      * @param yCoordinates The list of y-coordinates 
-     * @param paint The paint for the points. If this is <code>null</code>,
-     * then no points will be painted.
+     * @param fillPaint The paint for filling the points. If this is 
+     * <code>null</code> then no points will be filled.
+     * @param drawPaint The paint for drawing the point outlines. If this is 
+     * <code>null</code> then no point outlines will be drawn.
+     * @param drawStroke The stroke that will be used for drawing the point
+     * outlines. If this is <code>null</code>, then no outlines will be drawn
      * @param shape The shape for the points. If this is <code>null</code>,
      * then no points will be painted.
      * @return The {@link ScatterChart}
@@ -110,7 +94,7 @@ public class ScatterCharts
     public static ScatterChart create(
         List<? extends Number> xCoordinates,
         List<? extends Number> yCoordinates, 
-        Paint paint, Shape shape)
+        Paint fillPaint, Paint drawPaint, Stroke drawStroke, Shape shape)
     {
         Objects.requireNonNull(xCoordinates, "The xCoordinates are null");
         Objects.requireNonNull(yCoordinates, "The yCoordinates are null");
@@ -120,31 +104,86 @@ public class ScatterCharts
                 "The xCoordinates have a size of "+xCoordinates.size()+
                 " and the xCoordinates have a size of "+yCoordinates.size());
         }
+        return create(
+            xCoordinates.size(),
+            index -> xCoordinates.get(index).doubleValue(),
+            index -> yCoordinates.get(index).doubleValue(),
+            fillPaint, drawPaint, drawStroke, shape);
+    }
+
+    /**
+     * Create a {@link ScatterChart} that is a view on the given 
+     * point coordinates. Changes in the given functions will be 
+     * visible in the returned chart, but care has to be taken that 
+     * the lists always have the same size.
+     * 
+     * @param numPoints The number of points
+     * @param xCoordinates The x-coordinates 
+     * @param yCoordinates The y-coordinates 
+     * @param fillPaint The paint for filling the points. If this is 
+     * <code>null</code> then no points will be filled.
+     * @param drawPaint The paint for drawing the point outlines. If this is 
+     * <code>null</code> then no point outlines will be drawn.
+     * @param drawStroke The stroke that will be used for drawing the point
+     * outlines. If this is <code>null</code>, then no outlines will be drawn
+     * @param shape The shape for the points. If this is <code>null</code>,
+     * then no points will be painted.
+     * @return The {@link ScatterChart}
+     * @throws NullPointerException If any of the given lists is 
+     * <code>null</code>
+     * @throws IllegalArgumentException If number of points is negative
+     */
+    public static ScatterChart create(
+        int numPoints,
+        IntToDoubleFunction xCoordinates,
+        IntToDoubleFunction yCoordinates, 
+        Paint fillPaint, Paint drawPaint,
+        Stroke drawStroke, Shape shape)
+    {
+        Objects.requireNonNull(xCoordinates, "The xCoordinates are null");
+        Objects.requireNonNull(yCoordinates, "The yCoordinates are null");
+        if (numPoints < 0)
+        {
+            throw new IllegalArgumentException(
+                "The numPoints may not be negative, but is " + numPoints);
+        }
             
         return new ScatterChart()
         {
             @Override
             public int getNumPoints()
             {
-                return xCoordinates.size();
+                return numPoints;
             }
 
             @Override
             public double getPointX(int index)
             {
-                return xCoordinates.get(index).doubleValue();
+                return xCoordinates.applyAsDouble(index);
             }
 
             @Override
             public double getPointY(int index)
             {
-                return yCoordinates.get(index).doubleValue();
+                return yCoordinates.applyAsDouble(index);
             }
             
             @Override
-            public Paint getPaint(int index)
+            public Paint getFillPaint(int index)
             {
-                return paint;
+                return fillPaint;
+            }
+            
+            @Override
+            public Paint getDrawPaint(int index)
+            {
+                return drawPaint;
+            }
+            
+            @Override
+            public Stroke getDrawStroke(int index)
+            {
+                return drawStroke;
             }
             
             @Override
@@ -154,7 +193,7 @@ public class ScatterCharts
             }
         };
     }
-
+    
     /**
      * Returns the minimum x-coordinate that appears in the given
      * chart. Returns <code>POSITIVE_INFINITY</code> if the chart is
