@@ -26,6 +26,8 @@
  */
 package de.javagl.viewer.glyphs;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -98,6 +100,9 @@ public class BasicScatterChart implements ScatterChart
             pointYFunction, "The pointYFunction may not be null");
         
         setShape(TickShapes.square(3));
+        setFillPaint(Color.BLACK);
+        setDrawPaint(Color.RED);
+        setDrawStroke(new BasicStroke(1.0f));
     }
     
     /**
