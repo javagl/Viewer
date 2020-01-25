@@ -37,7 +37,7 @@ import java.util.function.Predicate;
  * <br>
  * This class is not part of the public API, and may be omitted in the future.
  */
-class Predicates
+public class Predicates
 {
     /**
      * Create a predicate with the given string representation, that
@@ -48,7 +48,7 @@ class Predicates
      * @param string The string representation of the predicate
      * @return The predicate
      */
-    static <T> Predicate<T> create(Predicate<? super T> p, String string)
+    public static <T> Predicate<T> create(Predicate<? super T> p, String string)
     {
         Objects.requireNonNull(p);
         return new Predicate<T>()
@@ -94,7 +94,7 @@ class Predicates
      * @param p1 The second predicate. May not be <code>null</code>.
      * @return The resulting predicate
      */
-    static <T> Predicate<T> and(
+    public static <T> Predicate<T> and(
         Predicate<? super T> p0, 
         Predicate<? super T> p1)
     {
@@ -125,7 +125,7 @@ class Predicates
      * @param p1 The second predicate. May not be <code>null</code>.
      * @return The resulting predicate
      */
-    static <T> Predicate<T> or(
+    public static <T> Predicate<T> or(
         Predicate<? super T> p0, 
         Predicate<? super T> p1)
     {
@@ -154,7 +154,7 @@ class Predicates
      * @param p The predicate. May not be <code>null</code>.
      * @return The resulting predicate
      */
-    static <T> Predicate<T> negate(
+    public static <T> Predicate<T> negate(
         Predicate<? super T> p)
     {
         Objects.requireNonNull(p);
