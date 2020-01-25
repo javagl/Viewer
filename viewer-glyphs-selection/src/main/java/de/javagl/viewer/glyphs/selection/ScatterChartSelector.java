@@ -83,13 +83,11 @@ public class ScatterChartSelector
         {
             return Collections.emptySet();
         }
-        // TODO This should be based on the tick size...
-        double pointSize = 10.0;
-        return Selectors.computePointIndicesForPoint(
-            point, worldToScreen, scatterChart.getNumPoints(), 
+        return Selectors.computeShapeIndicesForPoint(point, worldToScreen, 
+            scatterChart.getNumPoints(), 
             scatterChart::getPointX,
             scatterChart::getPointY,
-            pointSize);
+            scatterChart::getShape);
     }
 
 }

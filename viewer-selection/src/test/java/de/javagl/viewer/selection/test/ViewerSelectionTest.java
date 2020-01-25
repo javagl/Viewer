@@ -53,19 +53,18 @@ public class ViewerSelectionTest
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.getContentPane().setLayout(new BorderLayout());
        
-        f.getContentPane().add(
-            new JLabel("<html>"
-                + "Right mouse drags: Translate<br> "
-                + "Left mouse drags: Create selection shape<br>"
-                + "&nbsp;&nbsp;&nbsp;&nbsp; +shift: remove from selection<br>"
-                + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: add to selection<br>"
-                + "Left mouse clicks: Select single<br>"
-                + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: toggle single selection<br>"
-                + "Mouse wheel: Zoom uniformly<br>"
-                + "&nbsp;&nbsp;&nbsp;&nbsp; +shift: zoom along x<br>"
-                + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: zoom along y<br>"
-                + "</html>"),
-            BorderLayout.NORTH);
+        JLabel usageLabel = new JLabel("<html>"
+            + "Right mouse drags: Translate<br> "
+            + "Left mouse drags: Create selection shape<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +shift: remove from selection<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: add to selection<br>"
+            + "Left mouse clicks: Select single<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: toggle single selection<br>"
+            + "Mouse wheel: Zoom uniformly<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +shift: zoom along x<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: zoom along y<br>"
+            + "</html>");
+        f.getContentPane().add(usageLabel, BorderLayout.NORTH);
        
         // Create a viewer, with mouse controls where the rotation is
         // disabled (left clicks are intended for the selection here)

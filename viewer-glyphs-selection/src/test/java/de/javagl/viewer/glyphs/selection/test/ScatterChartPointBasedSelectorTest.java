@@ -5,12 +5,12 @@
  */
 package de.javagl.viewer.glyphs.selection.test;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.geom.Point2D;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,16 +22,13 @@ import de.javagl.selection.SelectionModels;
 import de.javagl.viewer.MouseControls;
 import de.javagl.viewer.Painters;
 import de.javagl.viewer.Viewer;
+import de.javagl.viewer.glyphs.BasicScatterChart;
 import de.javagl.viewer.glyphs.ScatterChart;
 import de.javagl.viewer.glyphs.ScatterChartPainter;
 import de.javagl.viewer.glyphs.ScatterCharts;
 import de.javagl.viewer.glyphs.TickShapes;
-import de.javagl.viewer.glyphs.selection.ScatterChartSelector;
+import de.javagl.viewer.glyphs.selection.ScatterChartSelectionHandlers;
 import de.javagl.viewer.painters.CoordinateSystemPainter;
-import de.javagl.viewer.selection.PointBasedSelector;
-import de.javagl.viewer.selection.SelectionHandler;
-import de.javagl.viewer.selection.SelectionHandlers;
-import de.javagl.viewer.selection.ShapeBasedSelector;
 
 /**
  * Simple integration test of the {@link ScatterChart} selection
@@ -56,28 +53,20 @@ public class ScatterChartPointBasedSelectorTest
         JFrame f = new JFrame("Viewer");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.getContentPane().setLayout(new BorderLayout());
-        f.getContentPane().add(
-            new JLabel("<html>"
-                + "Right mouse drags: Translate<br> "
-                + "Left mouse drags: Rotate<br>"
-                + "Mouse wheel: Zoom uniformly<br>"
-                + "&nbsp;&nbsp;&nbsp;&nbsp; +shift: zoom along x<br>"
-                + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: zoom along y<br>"
-                + "</html>"),
-            BorderLayout.NORTH);
 
-        List<Point2D> points = Arrays.asList(
-            new Point2D.Double(-1.5, -1.5),
-            new Point2D.Double(-1.0, -1.0),
-            new Point2D.Double(0.0, 0.0),
-            new Point2D.Double(1.0, 0.0),
-            new Point2D.Double(1.0, 1.0),
-            new Point2D.Double(0.0, 1.0)
-        );
+        JLabel usageLabel = new JLabel("<html>"
+            + "Right mouse drags: Translate<br> "
+            + "Left mouse drags: Create selection shape<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +shift: remove from selection<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: add to selection<br>"
+            + "Left mouse clicks: Select single<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: toggle single selection<br>"
+            + "Mouse wheel: Zoom uniformly<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +shift: zoom along x<br>"
+            + "&nbsp;&nbsp;&nbsp;&nbsp; +ctrl: zoom along y<br>"
+            + "</html>");
+        f.getContentPane().add(usageLabel, BorderLayout.NORTH);
 
-        ScatterChart scatterChart = ScatterCharts.create(points, 
-            Color.GREEN, Color.BLUE, 
-            new BasicStroke(3.0f), TickShapes.square(8));
 
         // Create a viewer, with mouse controls where the rotation is
         // disabled (left clicks are intended for the selection here)
@@ -91,39 +80,38 @@ public class ScatterChartPointBasedSelectorTest
         selectionModel.addSelectionListener(
             new LoggingSelectionListener<Integer>());
 
-        ScatterChartSelector scatterChartSelector = new ScatterChartSelector();
-        scatterChartSelector.setScatterChart(scatterChart);
         
-        // The selector implements both selector interfaces.
-        // Make this clear by assigning it to respective variables
-        PointBasedSelector<Integer> pointBasedSelector = scatterChartSelector;
-        ShapeBasedSelector<Integer> shapeBasedSelector = scatterChartSelector;
-
-        // Create a selection handler for clicks, and use it to connect
-        // the viewer and the selection model
-        SelectionHandler<Integer> clickSelectionHandler = 
-            SelectionHandlers.createClick(pointBasedSelector);
-        clickSelectionHandler.connect(viewer, selectionModel);
+        // Create the scatter chart
+        int numPoints = 40;
+        Random random = new Random(0);
+        List<Point2D> points = new ArrayList<Point2D>();
+        for (int i = 0; i < numPoints; i++)
+        {
+            double x = random.nextDouble();
+            double y = random.nextDouble();
+            Point2D p = new Point2D.Double(x, y);
+            points.add(p);
+        }
+        BasicScatterChart scatterChart = ScatterCharts.create(points, 
+            Color.GREEN, Color.BLUE, null, TickShapes.square(12));
         
-        // Create a selection handler for a lasso selection, and use it to 
-        // connect the viewer and the selection model
-        SelectionHandler<Integer> lassoSelectionHandler = 
-            SelectionHandlers.createLasso(shapeBasedSelector);
-        lassoSelectionHandler.connect(viewer, selectionModel);
+        // Establish the connection between the viewer, the scatter chart
+        // and the selection model. 
+        // See the implementation of the "createDefault" method for details 
+        ScatterChartSelectionHandlers.createDefault(
+            viewer, scatterChart, selectionModel);
 
         CoordinateSystemPainter coordinateSystemPainter = 
             new CoordinateSystemPainter();
         coordinateSystemPainter.setGridColorX(null);
         coordinateSystemPainter.setGridColorY(null);
-        coordinateSystemPainter.setAxisRangeX(-2.5, 2.0);
-        coordinateSystemPainter.setAxisRangeY(-2.5, 2.0);
-        coordinateSystemPainter.setAxisLocationX(-2.5);
-        coordinateSystemPainter.setAxisLocationY(-2.5);
+        coordinateSystemPainter.setAxisRangeX(0.0, 1.0);
+        coordinateSystemPainter.setAxisRangeY(0.0, 1.0);
         viewer.addPainter(coordinateSystemPainter);
-
+        
         ScatterChartPainter scatterChartPainter = new ScatterChartPainter();
         viewer.addPainter(Painters.create(scatterChartPainter, scatterChart));
-        viewer.setDisplayedWorldArea(-3, -3, 6, 6);
+        viewer.setDisplayedWorldArea(-1, -1, 3, 3);
 
         f.getContentPane().add(viewer, BorderLayout.CENTER);
         f.setSize(800, 800);

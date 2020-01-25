@@ -57,7 +57,7 @@ public class ScatterCharts
      * @return The {@link ScatterChart}
      * @throws NullPointerException If the given list is <code>null</code>
      */
-    public static ScatterChart create(
+    public static BasicScatterChart create(
         List<? extends Point2D> points, 
         Paint fillPaint, Paint drawPaint, Stroke drawStroke, Shape shape)
     {
@@ -91,7 +91,7 @@ public class ScatterCharts
      * @throws IllegalArgumentException If the given lists have a different
      * size. This can only be checked at creation time.
      */
-    public static ScatterChart create(
+    public static BasicScatterChart create(
         List<? extends Number> xCoordinates,
         List<? extends Number> yCoordinates, 
         Paint fillPaint, Paint drawPaint, Stroke drawStroke, Shape shape)
@@ -133,7 +133,7 @@ public class ScatterCharts
      * <code>null</code>
      * @throws IllegalArgumentException If number of points is negative
      */
-    public static ScatterChart create(
+    public static BasicScatterChart create(
         int numPoints,
         IntToDoubleFunction xCoordinates,
         IntToDoubleFunction yCoordinates, 
@@ -147,51 +147,15 @@ public class ScatterCharts
             throw new IllegalArgumentException(
                 "The numPoints may not be negative, but is " + numPoints);
         }
-            
-        return new ScatterChart()
-        {
-            @Override
-            public int getNumPoints()
-            {
-                return numPoints;
-            }
-
-            @Override
-            public double getPointX(int index)
-            {
-                return xCoordinates.applyAsDouble(index);
-            }
-
-            @Override
-            public double getPointY(int index)
-            {
-                return yCoordinates.applyAsDouble(index);
-            }
-            
-            @Override
-            public Paint getFillPaint(int index)
-            {
-                return fillPaint;
-            }
-            
-            @Override
-            public Paint getDrawPaint(int index)
-            {
-                return drawPaint;
-            }
-            
-            @Override
-            public Stroke getDrawStroke(int index)
-            {
-                return drawStroke;
-            }
-            
-            @Override
-            public Shape getShape(int index)
-            {
-                return shape;
-            }
-        };
+        
+        BasicScatterChart basicScatterChart = new BasicScatterChart(
+            () -> numPoints, xCoordinates, yCoordinates);
+        
+        basicScatterChart.setShape(shape);
+        basicScatterChart.setFillPaint(fillPaint);
+        basicScatterChart.setDrawPaint(drawPaint);
+        basicScatterChart.setDrawStroke(drawStroke);
+        return basicScatterChart;
     }
     
     /**
