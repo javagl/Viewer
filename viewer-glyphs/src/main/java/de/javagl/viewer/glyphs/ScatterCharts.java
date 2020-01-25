@@ -332,7 +332,7 @@ public class ScatterCharts
      * @param scatterChart The chart
      * @return The bounds
      */
-    static Rectangle2D computeBounds(ScatterChart scatterChart)
+    public static Rectangle2D computeBounds(ScatterChart scatterChart)
     {
         double minX = computeMinX(scatterChart);
         double minY = computeMinY(scatterChart);

@@ -26,6 +26,7 @@
  */
 package de.javagl.viewer.glyphs;
 
+import java.awt.geom.Rectangle2D;
 
 /**
  * Interface for a simple scatter chart matrix
@@ -62,4 +63,19 @@ public interface ScatterChartMatrix
      * smaller than 0 or not smaller than {@link #getNumCharts()}
      */
     String getLabel(int row, int col);
+    
+    /**
+     * Returns the <i>relative</i> bounds of the specified cell. This is
+     * a rectangle that describes the bounds of the scatter chart in 
+     * the cell at the specified indices, relative to a rectangle
+     * (0,0)-(1,1). This method may not return <code>null</code> when
+     * {@link #getChart(int, int)} returns a non-<code>null</code> value.
+     * 
+     * @param row The row index
+     * @param col The column index
+     * @return The cell bounds
+     * @throws IndexOutOfBoundsException May be thrown if any index is 
+     * smaller than 0 or not smaller than {@link #getNumCharts()}
+     */
+    Rectangle2D getRelativeCellBounds(int row, int col);
 }

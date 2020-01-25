@@ -63,27 +63,7 @@ public final class ScatterChartMatrixPainter
      * If this is <code>null</code>, then no borders will be painted.
      */
     private Paint borderPaint = Color.GRAY;
-    
-    /**
-     * The relative spacing for the top border of the scatter chart cells
-     */
-    private double borderSpacingTop = 0.08;
 
-    /**
-     * The relative spacing for the bottom border of the scatter chart cells
-     */
-    private double borderSpacingBottom = 0.025;
-
-    /**
-     * The relative spacing for the left border of the scatter chart cells
-     */
-    private double borderSpacingLeft = 0.025;
-
-    /**
-     * The relative spacing for the right border of the scatter chart cells
-     */
-    private double borderSpacingRight = 0.025;
-    
     /**
      * The {@link LabelPainter} that will be used for the labels
      */
@@ -113,7 +93,6 @@ public final class ScatterChartMatrixPainter
     {
         this.labelPainter = new LabelPainter();
         this.labelPainter.setLabelAnchor(0, 0);
-        this.labelPainter.setLabelLocation(borderSpacingLeft,0);
         this.labelPainter.setPaint(Color.BLACK);
         this.labelPainter.setFont(
             new Font("Dialog", Font.PLAIN, 9).deriveFont(0.06f));
@@ -168,8 +147,6 @@ public final class ScatterChartMatrixPainter
 
         int n = scatterChartMatrix.getNumCharts();
         double cellSize = 1.0 / n;
-        double chartScaleX = 1.0 - borderSpacingLeft - borderSpacingRight;
-        double chartScaleY = 1.0 - borderSpacingTop - borderSpacingBottom;
         for (int r = 0; r < n; r++)
         {
             for (int c = 0; c < n; c++)
@@ -179,6 +156,8 @@ public final class ScatterChartMatrixPainter
                 {
                     continue;
                 }
+                Rectangle2D cellBounds = 
+                    scatterChartMatrix.getRelativeCellBounds(r, c);
 
                 TEMP_TRANSFORM.setTransform(worldToScreen);
                 TEMP_TRANSFORM.translate(c * cellSize, r * cellSize);
@@ -187,17 +166,19 @@ public final class ScatterChartMatrixPainter
                 String label = scatterChartMatrix.getLabel(r, c);
                 if (label != null)
                 {
+                    this.labelPainter.setLabelLocation(cellBounds.getX(), 0);
                     double availableScreenSpaceY = 
                         AffineTransforms.computeDistanceY(
-                            TEMP_TRANSFORM, borderSpacingTop);
+                            TEMP_TRANSFORM, cellBounds.getY());
                     generalLabelPainterPredicate.setMaximumScreenHeight(
                         availableScreenSpaceY);
                     labelPainter.paint(g, TEMP_TRANSFORM, w, h, label);
                 }
 
                 TEMP_TRANSFORM.translate(
-                    borderSpacingLeft, borderSpacingTop);
-                TEMP_TRANSFORM.scale(chartScaleX, chartScaleY);
+                    cellBounds.getX(), cellBounds.getY());
+                TEMP_TRANSFORM.scale(
+                    cellBounds.getWidth(), cellBounds.getHeight());
 
                 if (borderPaint != null)
                 {
@@ -254,7 +235,7 @@ public final class ScatterChartMatrixPainter
             }
         }
     }
-    
+        
     /**
      * Sanitize the given rectangle for scaling operations. If the width or 
      * the height of the given rectangle is smaller than a small epsilon,

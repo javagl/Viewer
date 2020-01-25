@@ -51,6 +51,14 @@ public class ScatterChartSelector
     private ScatterChart scatterChart;
     
     /**
+     * Creates a new instance
+     */
+    public ScatterChartSelector()
+    {
+        // Default constructor
+    }
+    
+    /**
      * Set the {@link ScatterChart} for the selection, or <code>null</code>
      * if no selection should be possible
      * 
