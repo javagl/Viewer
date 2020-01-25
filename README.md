@@ -36,6 +36,9 @@ Java Swing viewers
 
 # Changes
 
+0.1.3-SNAPSHOT: 
+  * ...
+ 
 0.1.2 :
   * Added `LinkedMouseControls`
   * Generalized `BoxPlotPainter`
