@@ -230,6 +230,22 @@ public class InputEventPredicates
     }
     
     /**
+     * Returns a predicate that checks whether the given mouse event was 
+     * causes by pressing the specified button
+     * 
+     * @param <T> The argument type 
+     * 
+     * @return The predicate
+     * @param button The button
+     */
+    public static <T extends MouseEvent> Predicate<T> button(int button)
+    {
+        return Predicates.create(
+            t -> t.getButton() == button, "button("+button+")");
+    }
+    
+    
+    /**
      * Returns a predicate that checks whether the given input event
      * was created while the respective mouse button was pressed
      * 
