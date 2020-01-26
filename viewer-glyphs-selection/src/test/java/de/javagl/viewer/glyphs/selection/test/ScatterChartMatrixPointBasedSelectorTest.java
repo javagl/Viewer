@@ -21,11 +21,8 @@ import de.javagl.viewer.glyphs.ScatterChart;
 import de.javagl.viewer.glyphs.ScatterChartMatrices;
 import de.javagl.viewer.glyphs.ScatterChartMatrix;
 import de.javagl.viewer.glyphs.ScatterChartMatrixPainter;
-import de.javagl.viewer.glyphs.selection.ScatterChartMatrixSelector;
-import de.javagl.viewer.selection.PointBasedSelector;
-import de.javagl.viewer.selection.SelectionHandler;
-import de.javagl.viewer.selection.SelectionHandlers;
-import de.javagl.viewer.selection.ShapeBasedSelector;
+import de.javagl.viewer.glyphs.selection.GlyphSelectionHandler;
+import de.javagl.viewer.glyphs.selection.GlyphSelectionHandlers;
 
 /**
  * Simple integration test of the {@link ScatterChart} selection
@@ -76,32 +73,16 @@ public class ScatterChartMatrixPointBasedSelectorTest
         selectionModel.addSelectionListener(
             new LoggingSelectionListener<Integer>());
 
-        ScatterChartMatrixSelector scatterChartMatrixSelector = 
-            new ScatterChartMatrixSelector();
-        
-        // The selector implements both selector interfaces.
-        // Make this clear by assigning it to respective variables
-        PointBasedSelector<Integer> pointBasedSelector = 
-            scatterChartMatrixSelector;
-        ShapeBasedSelector<Integer> shapeBasedSelector = 
-            scatterChartMatrixSelector;
-
-        // Create a selection handler for clicks, and use it to connect
-        // the viewer and the selection model
-        SelectionHandler<Integer> clickSelectionHandler = 
-            SelectionHandlers.createClick(pointBasedSelector);
-        clickSelectionHandler.connect(viewer, selectionModel);
-        
-        // Create a selection handler for a lasso selection, and use it to 
-        // connect the viewer and the selection model
-        SelectionHandler<Integer> lassoSelectionHandler = 
-            SelectionHandlers.createLasso(shapeBasedSelector);
-        lassoSelectionHandler.connect(viewer, selectionModel);
-        
+        // Create the scatter chart matrix
         ScatterChartMatrix scatterChartMatrix = 
             ScatterChartMatrices.createTest(selectionModel::isSelected);
         
-        scatterChartMatrixSelector.setScatterChartMatrix(scatterChartMatrix);
+        // Establish the connection between the viewer, the scatter chart
+        // and the selection model using a GlyphSelectionHandler: 
+        GlyphSelectionHandler<ScatterChartMatrix, Integer> selectionHandler = 
+                GlyphSelectionHandlers.createDefaultScatterChartMatrix();
+        selectionHandler.connect(viewer, selectionModel);
+        selectionHandler.setGlyph(scatterChartMatrix);
 
         ScatterChartMatrixPainter scatterChartMatrixPainter = 
             new ScatterChartMatrixPainter();

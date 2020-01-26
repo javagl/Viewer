@@ -26,26 +26,23 @@
  */
 package de.javagl.viewer.glyphs.selection;
 
-import de.javagl.viewer.Viewer;
+import de.javagl.viewer.glyphs.BoxPlot;
 import de.javagl.viewer.glyphs.ScatterChart;
 import de.javagl.viewer.selection.SelectionHandler;
 
 /**
- * Interface encapsulating the elements that connect a {@link Viewer} 
- * and a {@link ScatterChart} with a selection model.<br>
- * <br>
- * This is only intended to have the convenience functionality in the
- * {@link ScatterChartSelectionHandlers} class and still be able to
- * disconnect the underlying elements later.<br>
- * <br>
- * This interface is only intended for internal use, and should not be
- * considered to be part of the public API.
+ * Extension of a {@link SelectionHandler} that handles the selection in
+ * a glyph, for example, in a {@link ScatterChart} or {@link BoxPlot}.
+ * 
+ * @param <G> The glyph type
+ * @param <T> The type of the selected elements
  */
-public interface ScatterChartSelectionHandler
+public interface GlyphSelectionHandler<G, T> extends SelectionHandler<T>
 {
     /**
-     * Disconnect all {@link SelectionHandler} instances that have been
-     * created when this handler was established.
+     * Set the glyph for which the selection should be handled
+     * 
+     * @param glyph The glyph
      */
-    void disconnect();
+    void setGlyph(G glyph);
 }

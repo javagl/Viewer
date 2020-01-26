@@ -5,6 +5,7 @@
  */
 package de.javagl.viewer.glyphs.selection.test;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.geom.Point2D;
@@ -27,7 +28,8 @@ import de.javagl.viewer.glyphs.ScatterChart;
 import de.javagl.viewer.glyphs.ScatterChartPainter;
 import de.javagl.viewer.glyphs.ScatterCharts;
 import de.javagl.viewer.glyphs.TickShapes;
-import de.javagl.viewer.glyphs.selection.ScatterChartSelectionHandlers;
+import de.javagl.viewer.glyphs.selection.GlyphSelectionHandler;
+import de.javagl.viewer.glyphs.selection.GlyphSelectionHandlers;
 import de.javagl.viewer.painters.CoordinateSystemPainter;
 
 /**
@@ -80,7 +82,6 @@ public class ScatterChartPointBasedSelectorTest
         selectionModel.addSelectionListener(
             new LoggingSelectionListener<Integer>());
 
-        
         // Create the scatter chart
         int numPoints = 40;
         Random random = new Random(0);
@@ -93,13 +94,26 @@ public class ScatterChartPointBasedSelectorTest
             points.add(p);
         }
         BasicScatterChart scatterChart = ScatterCharts.create(points, 
-            Color.GREEN, Color.BLUE, null, TickShapes.square(12));
+            null, Color.GREEN, new BasicStroke(1.0f), TickShapes.square(8));
+
+        // Set the function that determines whether the points will be
+        // filled, based on their selection state
+        scatterChart.setFillPaintFunction(i -> 
+        {
+            if (selectionModel.isSelected(i))
+            {
+                return Color.GREEN;
+            }
+            return null;
+        });
         
         // Establish the connection between the viewer, the scatter chart
-        // and the selection model. 
-        // See the implementation of the "createDefault" method for details 
-        ScatterChartSelectionHandlers.createDefault(
-            viewer, scatterChart, selectionModel);
+        // and the selection model using a GlyphSelectionHandler: 
+        GlyphSelectionHandler<ScatterChart, Integer> selectionHandler = 
+            GlyphSelectionHandlers.createDefaultScatterChart();
+        selectionHandler.connect(viewer, selectionModel);
+        selectionHandler.setGlyph(scatterChart);
+        
 
         CoordinateSystemPainter coordinateSystemPainter = 
             new CoordinateSystemPainter();

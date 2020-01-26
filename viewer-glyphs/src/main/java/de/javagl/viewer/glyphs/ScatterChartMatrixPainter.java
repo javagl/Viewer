@@ -26,10 +26,12 @@
  */
 package de.javagl.viewer.glyphs;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
@@ -57,6 +59,11 @@ public final class ScatterChartMatrixPainter
      */
     private static final Rectangle2D UNIT_RECTANGLE = 
         new Rectangle2D.Double(0,0,1,1);
+
+    /**
+     * A default stroke
+     */
+    private static final Stroke DEFAULT_STROKE = new BasicStroke(1.0f);
     
     /**
      * The paint that should be used for the border of the charts.
@@ -182,6 +189,7 @@ public final class ScatterChartMatrixPainter
 
                 if (borderPaint != null)
                 {
+                    g.setStroke(DEFAULT_STROKE);
                     g.setPaint(borderPaint);
                     g.draw(TEMP_TRANSFORM.createTransformedShape(
                         UNIT_RECTANGLE));

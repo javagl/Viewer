@@ -42,9 +42,6 @@ import de.javagl.viewer.Viewer;
 /**
  * Implementation of the {@link SelectionHandler} interface for a click 
  * selection.<br>
- * <br>
- * It allows drawing a selection area that contains element that should 
- * added to (or set as) the selection.<br>
  * 
  * @param <T> The type of the elements
  */
@@ -69,7 +66,7 @@ class ClickSelectionHandler<T> implements SelectionHandler<T>
      * The predicate that is checked for a mouse press or click event to 
      * determine whether the event should start or affect the selection 
      */
-    private Predicate<MouseEvent> selectPredicate = 
+    private final Predicate<MouseEvent> selectPredicate = 
         InputEventPredicates.button(1);
     
     /**

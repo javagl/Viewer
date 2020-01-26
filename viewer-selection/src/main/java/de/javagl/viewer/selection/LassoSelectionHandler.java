@@ -84,7 +84,7 @@ class LassoSelectionHandler<T> implements SelectionHandler<T>
      * The predicate that is checked for a mouse press or click event to 
      * determine whether the event should start or affect the selection 
      */
-    private Predicate<MouseEvent> selectPredicate = 
+    private final Predicate<MouseEvent> selectPredicate = 
         InputEventPredicates.button(1);
     
     /**

@@ -30,6 +30,8 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
 import java.util.function.IntPredicate;
+import java.util.function.IntSupplier;
+import java.util.function.IntToDoubleFunction;
 
 /**
  * A class for creating a {@link ScatterChartMatrix} with test data.<br>
@@ -99,10 +101,15 @@ public class ScatterChartMatrices
                     return null;
                 }
                 
+                IntSupplier numPointsSupplier = () -> data.length;
+                IntToDoubleFunction pointXFunction = 
+                    index -> (Double)data[index][col];
+                IntToDoubleFunction pointYFunction = 
+                    index -> (Double)data[index][row];
+                    
                 BasicScatterChart scatterChart = new BasicScatterChart(
-                    () -> data.length, 
-                    index -> (Double)data[index][col], 
-                    index -> (Double)data[index][row]);
+                    numPointsSupplier, pointXFunction, pointYFunction);
+
                 scatterChart.setShape(TickShapes.square(4));
                 scatterChart.setDrawPaintFunction(index -> colorFor(index));
                 if (fillPredicate == null)

@@ -46,7 +46,7 @@ import de.javagl.viewer.selection.ShapeBasedSelector;
  * in a {@link ScatterChartMatrix}, and returns the indices of the selected
  * points.
  */
-public class ScatterChartMatrixSelector 
+class ScatterChartMatrixSelector 
     implements PointBasedSelector<Integer>, ShapeBasedSelector<Integer>
 {
     /**
@@ -62,7 +62,7 @@ public class ScatterChartMatrixSelector
     /**
      * Creates a new instance
      */
-    public ScatterChartMatrixSelector()
+    ScatterChartMatrixSelector()
     {
         this.scatterChartSelector = new ScatterChartSelector();
     }
@@ -73,7 +73,7 @@ public class ScatterChartMatrixSelector
      * 
      * @param scatterChartMatrix The {@link ScatterChartMatrix}
      */
-    public void setScatterChartMatrix(ScatterChartMatrix scatterChartMatrix)
+    void setScatterChartMatrix(ScatterChartMatrix scatterChartMatrix)
     {
         this.scatterChartMatrix = scatterChartMatrix;
     }

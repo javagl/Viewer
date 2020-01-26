@@ -42,7 +42,12 @@ public interface SelectionHandler<T>
      * <br>
      * This will attach mouse- and mouse motion listeners to the given 
      * viewer so that the selection in the given selection model may be
-     * modified with the mouse.<br>  
+     * modified with the mouse.<br>
+     * <br>
+     * Determining which elements are affected by mouse actions will be
+     * determined internally, using different implementations of the
+     * {@link PointBasedSelector} and {@link ShapeBasedSelector} 
+     * interface.<br>  
      * <br>
      * If both arguments are <code>null</code>, then this will have 
      * the same effect as calling {@link #disconnect()}.
