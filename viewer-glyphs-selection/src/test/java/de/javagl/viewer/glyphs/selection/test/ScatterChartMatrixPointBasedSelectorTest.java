@@ -80,7 +80,7 @@ public class ScatterChartMatrixPointBasedSelectorTest
         // Establish the connection between the viewer, the scatter chart
         // and the selection model using a GlyphSelectionHandler: 
         GlyphSelectionHandler<ScatterChartMatrix, Integer> selectionHandler = 
-                GlyphSelectionHandlers.createDefaultScatterChartMatrix();
+            GlyphSelectionHandlers.createDefaultScatterChartMatrix();
         selectionHandler.connect(viewer, selectionModel);
         selectionHandler.setGlyph(scatterChartMatrix);
 
