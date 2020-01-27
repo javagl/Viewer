@@ -32,20 +32,35 @@ import java.util.Collection;
 import de.javagl.selection.SelectionModel;
 
 /**
- * Package-private interface for classes that can update a selection model
+ * Implementation of a {@link SelectionModelUpdater} that encapsulates a 
+ * default selection behavior for multiple elements: When CTRL is held down, 
+ * then the elements should be added to the selection. When SHIFT is held 
+ * down, then the elements should be removed from the selection. Otherwise, 
+ * the elements should be set as the selection.
  *
- * @param <T> The type of the selected elements
+ * @param <T> The type of the elements
  */
-interface SelectionModelUpdater<T>
+class CollectionSelectionModelUpdater<T>
+    implements SelectionModelUpdater<T>
 {
-    /**
-     * Update the {@link SelectionModel} using the given elements, based
-     * on the given input event.
-     * 
-     * @param e The input event
-     * @param selectionModel The {@link SelectionModel}
-     * @param affectedElements The affected elements
-     */
-    void updateSelectionModel(InputEvent e, 
-        SelectionModel<T> selectionModel, Collection<T> affectedElements);
+    @Override
+    public void updateSelectionModel(InputEvent e, 
+        SelectionModel<T> selectionModel, Collection<T> affectedElements)
+    {
+        boolean addToSelection = e.isControlDown();
+        boolean removeFromSelection = e.isShiftDown();
+        if (addToSelection)
+        {
+            selectionModel.addToSelection(affectedElements);            
+        }
+        else if (removeFromSelection)
+        {
+            selectionModel.removeFromSelection(affectedElements);
+        }
+        else
+        {
+            selectionModel.setSelection(affectedElements);
+        }
+    }
+
 }

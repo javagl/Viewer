@@ -143,7 +143,7 @@ class LassoSelectionHandler<T> implements SelectionHandler<T>
             shapeBasedSelector, "The shapeBasedSelector may not be null");
         this.selectionShapePainter = new SelectionShapePainter(
             () -> selectionPath);
-        this.selectionModelUpdater = new SelectionModelUpdater<T>();
+        this.selectionModelUpdater = new CollectionSelectionModelUpdater<T>();
     }
 
     

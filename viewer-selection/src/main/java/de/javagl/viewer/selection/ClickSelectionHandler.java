@@ -26,12 +26,10 @@
  */
 package de.javagl.viewer.selection;
 
-import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -56,6 +54,11 @@ class ClickSelectionHandler<T> implements SelectionHandler<T>
      * The {@link SelectionModel} that is controlled by this handler
      */
     private SelectionModel<T> selectionModel;
+    
+    /**
+     * The {@link SelectionModelUpdater}
+     */
+    private final SelectionModelUpdater<T> selectionModelUpdater;
     
     /**
      * The {@link PointBasedSelector}
@@ -85,53 +88,12 @@ class ClickSelectionHandler<T> implements SelectionHandler<T>
             Collection<T> affectedElements = 
                 pointBasedSelector.computeElementsForPoint(
                     e.getPoint(), worldToScreen);
-            updateSelectionModel(
+            selectionModelUpdater.updateSelectionModel(
                 e, selectionModel, affectedElements);
             viewer.repaint();
         }
     };
     
-    /**
-     * Update the {@link SelectionModel} using the given elements, based
-     * on the given input event.
-     * 
-     * @param e The input event
-     * @param selectionModel The {@link SelectionModel}
-     * @param affectedElements The affected elements
-     */
-    void updateSelectionModel(InputEvent e, 
-        SelectionModel<T> selectionModel, Collection<T> affectedElements)
-    {
-        if (!affectedElements.isEmpty())
-        {
-            for (T element : affectedElements)
-            {
-                if (e.isControlDown())
-                {
-                    if (selectionModel.isSelected(element))
-                    {
-                        selectionModel.removeFromSelection(element);
-                    }
-                    else
-                    {
-                        selectionModel.addToSelection(element);
-                    }
-                }
-                else
-                {
-                    selectionModel.setSelection(
-                        Collections.singleton(element));
-                }
-            }
-        }
-        else
-        {
-            if (!e.isControlDown())
-            {
-                selectionModel.clear();
-            }
-        }
-    }
     
     /**
      * Creates a new selection handler
@@ -142,6 +104,7 @@ class ClickSelectionHandler<T> implements SelectionHandler<T>
     {
         this.pointBasedSelector = Objects.requireNonNull(
             pointBasedSelector, "The pointBasedSelector may not be null");
+        this.selectionModelUpdater = new ToggleSelectionModelUpdater<T>();
     }
 
     @Override
