@@ -43,6 +43,8 @@
 		<module>viewer-functions</module>
 		<module>viewer-cells</module>
 		<module>viewer-glyphs</module>
+		<module>viewer-selection</module>
+		<module>viewer-glyphs-selection</module>
 	</modules>
 
 	<build>
